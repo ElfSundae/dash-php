@@ -1,0 +1,35 @@
+html {
+    /* Fix `background-image: url('/images/bg-texture-00.svg');` in styles/theme-medium.css */
+    background-image: url('../images/bg-texture-00.svg') !important;
+}
+
+/* Fix invalid selector `.docs .example-contents > .phpcode > code` */
+.docs .example-contents code {
+    padding: .75rem !important;
+}
+
+.navbar {
+    display: none !important;
+}
+
+#breadcrumbs {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.2);
+}
+
+#layout {
+    /* To make `position: sticky;` work */
+    overflow: auto;
+}
+
+#breadcrumbs ul {
+    padding-left: 3rem;
+}
+
+@media (min-width: 768px) {
+    #layout {
+        width: 95% !important;
+    }
+}
