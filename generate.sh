@@ -90,13 +90,13 @@ render_manual() {
     fi
     rm -rf "$output_dir"
 
-    git -C "$PHPDOC/phd" apply "$ROOT/assets/phd.patch"
+    git -C "$PHPDOC/phd" apply "$ROOT"/assets/phd.*.patch
 
     (
         cd "$PHPDOC"
         php phd/render.php --docbook doc-base/.manual.xml \
             --output "$PHPDOC_BUILD" \
-            --package PHP --format "$format" "$@" 2>/dev/null
+            --package PHP --format "$format" "$@"
     )
 
     git -C "$PHPDOC/phd" reset --hard -q
