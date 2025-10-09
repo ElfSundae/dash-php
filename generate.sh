@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# TODO: append Dash online url for all html files
 # TODO: Build Dash docset
 
 # Define colors for output messages
@@ -90,7 +89,7 @@ render_manual() {
     fi
     rm -rf "$output_dir"
 
-    git -C "$PHPDOC/phd" apply "$ROOT"/assets/phd.*.patch
+    git -C "$PHPDOC/phd" apply "$ROOT"/assets/phd.patch
 
     (
         cd "$PHPDOC"
