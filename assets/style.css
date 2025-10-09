@@ -1,11 +1,12 @@
 html {
     /* Fix `background-image: url('/images/bg-texture-00.svg');` in styles/theme-medium.css */
+    /* bg-texture-00.svg is not handled while rendering */
     background-image: url('../images/bg-texture-00.svg') !important;
 }
 
-/* Fix invalid selector `.docs .example-contents > .phpcode > code` */
-.docs .example-contents code {
-    padding: .75rem !important;
+/* Fix padding of example code blocks for PHP 8.3+ rendering */
+.docs .example-contents > .phpcode > pre {
+    padding: .75rem;
 }
 
 .navbar {
