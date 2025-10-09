@@ -1,7 +1,16 @@
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 0440afa..c23b621 100644
+index 0440afa..e72ac40 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
+@@ -16,7 +16,7 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+     }
+ 
+     public function header($id) {
+-        $title = Format::getLongDescription($id);
++        $title = Format::getShortDescription($id);
+         static $cssLinks = null;
+         if ($cssLinks === null) {
+             $cssLinks = $this->createCSSLinks();
 @@ -46,14 +46,13 @@ HEADER;
              );
              $nextLink = "<li style=\"float: right;\"><a href=\"{$next["href"]}\">{$next["desc"]} »</a></li>";
