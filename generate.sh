@@ -133,7 +133,7 @@ build_mirror() {
         # Some files are pre-generated on master.php.net for various reasons
         (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do wget "https://www.php.net/include/$i" -O $i; done;)
         (cd backend && for i in ip-to-country.db ip-to-country.idx; do wget "https://www.php.net/backend/$i" -O $i; done;)
-    ) &>/dev/null || true
+    ) &>/dev/null
 
     rm -rf "$root/manual/$lang"
     mv "$PHPDOC_BUILD/php-web" "$root/manual/$lang"
