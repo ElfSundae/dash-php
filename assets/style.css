@@ -9,28 +9,27 @@ html {
     padding: .75rem;
 }
 
+#layout {
+    /* To make breadcrumbs `position: sticky;` work */
+    overflow: auto;
+}
+
 .navbar {
     display: none !important;
 }
 
 #breadcrumbs {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
     box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.2);
 }
 
-#layout {
-    /* To make `position: sticky;` work */
-    overflow: auto;
-}
-
 #breadcrumbs ul {
+    margin: 0 auto;
     padding-left: 3rem;
 }
 
 @media (min-width: 768px) {
+    #breadcrumbs ul,
     #layout {
-        width: 95% !important;
+        width: 90% !important;
     }
 }
