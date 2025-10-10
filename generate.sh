@@ -232,7 +232,10 @@ build_mirror() {
         # Some files are pre-generated on master.php.net for various reasons
         (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do wget "https://www.php.net/include/$i" -O $i; done;)
         (cd backend && for i in ip-to-country.db ip-to-country.idx; do wget "https://www.php.net/backend/$i" -O $i; done;)
-    ) &>/dev/null
+    ) &>/dev/null || {
+        echo -e "${RED}Error: Failed to download php.net mirror files.${NC}" >&2
+        exit 4
+    }
 
     rm -rf "$root/manual/$lang"
     mv "$PHPDOC_BUILD/php-web" "$root/manual/$lang"
@@ -275,8 +278,8 @@ if [[ $# -gt 0 ]]; then
 
     lang=$(echo "$lang" | tr '[:upper:]' '[:lower:]')
     if [[ ! " ${LANG_CODES[*]} " =~ " $lang " ]]; then
-        echo -e "${RED}Error: unsupported language: ${lang}${NC}"
-        echo -e "Supported languages: ${LANG_CODES[*]}"
+        echo -e "${RED}Error: unsupported language: ${lang}${NC}" >&2
+        echo -e "Supported languages: ${LANG_CODES[*]}" >&2
         exit 1
     fi
 fi
