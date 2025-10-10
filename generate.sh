@@ -193,7 +193,8 @@ EOF
 
     tar --exclude='.DS_Store' -czf "$OUTPUT/${docset_basename%.*}.tgz" -C "$(dirname "$docset")" "$docset_basename"
     rm -rf "$OUTPUT/$docset_basename" && mv "$docset" "$OUTPUT/"
-    echo -e "\nCreated Dash docset at $OUTPUT/$docset_basename"
+
+    echo -e "\n${GREEN}Created Dash docset at $OUTPUT/$docset_basename${NC}"
 }
 
 build_docset() {
@@ -236,7 +237,7 @@ build_mirror() {
     rm -rf "$root/manual/$lang"
     mv "$PHPDOC_BUILD/php-web" "$root/manual/$lang"
 
-    echo -e "\nCreated php.net mirror at $root, you may run the web server via:"
+    echo -e "\n${GREEN}Created php.net mirror at $root, you may run the web server via:${NC}"
     echo -e "${GREEN}(cd \"$root\" && php -S localhost:8080 .router.php)${NC}"
 }
 
@@ -275,7 +276,7 @@ if [[ $# -gt 0 ]]; then
     lang=$(echo "$lang" | tr '[:upper:]' '[:lower:]')
     if [[ ! " ${LANG_CODES[*]} " =~ " $lang " ]]; then
         echo -e "${RED}Error: unsupported language: ${lang}${NC}"
-        echo -e "${GREEN}Supported languages: ${LANG_CODES[*]}${NC}"
+        echo -e "Supported languages: ${LANG_CODES[*]}"
         exit 1
     fi
 fi
