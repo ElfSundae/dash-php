@@ -1,7 +1,8 @@
-html {
-    /* Fix `background-image: url('/images/bg-texture-00.svg');` in styles/theme-medium.css */
-    /* bg-texture-00.svg is not handled while rendering */
-    background-image: url('../images/bg-texture-00.svg') !important;
+/* Fix html{background-color, background-image} styles not working in the Dash webview, applied them to `body` instead */
+body {
+    background-color: var(--background-color);
+    background-image: url('../images/bg-texture-00.svg');
+    color: var(--background-text-color);
 }
 
 /* Fix padding of example code blocks for PHP 8.3+ rendering */
