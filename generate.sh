@@ -6,6 +6,13 @@ GREEN="\033[0;32m"
 RED="\033[0;31m"
 NC="\033[0m" # No Color
 
+# Determine sed in-place editing option for macOS or Linux
+if [[ "$(uname)" == "Darwin" ]]; then
+    SED_INPLACE=(-i '')
+else
+    SED_INPLACE=(-i)
+fi
+
 # Supported languages: https://github.com/php/doc-en?tab=readme-ov-file#translations
 LANG_CODES=(
     "pt_br" "zh" "en" "fr" "de" "it"
@@ -179,8 +186,8 @@ build_docset() {
     # Prepare styles and fonts
     rm -rf "$PHPDOC_BUILD/fonts"
     cp -R "$PHPDOC/web-php/fonts" "$PHPDOC_BUILD/"
-    find "$PHPDOC_BUILD/fonts" -type f -name "*.css" -exec sed -i '' "s|'/fonts/|'../fonts/|g" {} +
-    find "$PHPDOC_BUILD/fonts/Font-Awesome" -type f -name "*.css" -exec sed -i '' "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
+    find "$PHPDOC_BUILD/fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
+    find "$PHPDOC_BUILD/fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
 
     render_manual enhancedchm --forceindex --lang "$lang" \
         --css "$PHPDOC_BUILD/fonts/Fira/fira.css" \
