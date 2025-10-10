@@ -1,18 +1,26 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# TODO: Build Dash docset
-
 # Define colors for output messages
 GREEN="\033[0;32m"
 RED="\033[0;31m"
 NC="\033[0m" # No Color
 
 # Supported languages: https://github.com/php/doc-en?tab=readme-ov-file#translations
-SUPPORTED_LANGUAGES=("pt_br" "zh" "en" "fr" "de" "it" "ja" "pl" "ro" "ru" "es" "tr" "uk")
+LANG_CODES=(
+    "pt_br" "zh" "en" "fr" "de" "it"
+    "ja" "pl" "ro" "ru" "es" "tr" "uk"
+)
+LANG_NAMES=(
+    "Português Brasil" "简体中文" "English" "Français" "Deutsch" "Italiano"
+    "日本語" "Polski" "Română" "Русский" "Español" "Türkçe" "Українська"
+)
 
 # The root directory of this script
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+# The output directory for generated docsets
+OUTPUT="$ROOT/output"
+
 # The root directory of the PHP doc repositories
 PHPDOC="$ROOT/phpdoc"
 # The build output directory for phpdoc
@@ -32,7 +40,7 @@ Usage: $(basename "$0") [LANG] [OPTIONS]
 
 Arguments:
   LANG      Language code for the PHP Manual to generate, defaults to '${lang}'.
-            Supported languages: ${SUPPORTED_LANGUAGES[*]}
+            Supported languages: ${LANG_CODES[*]}
 
 Options:
   --mirror          Create a php.net mirror during generation.
@@ -58,6 +66,7 @@ clone_or_pull() {
     )
 }
 
+# Fetch or update the required git repositories
 fetch_repos() {
     clone_or_pull "https://github.com/php/doc-base.git"
     clone_or_pull "https://github.com/php/doc-en.git" en
@@ -101,6 +110,71 @@ render_manual() {
     git -C "$PHPDOC/phd" reset --hard -q
 }
 
+# Get the language name from the language code: $code
+get_lang_name() {
+    local code="$1"
+    for i in "${!LANG_CODES[@]}"; do
+        if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
+            echo "${LANG_NAMES[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Create a Dash docset from the rendered HTML files: $root
+# https://kapeli.com/docsets#dashDocset
+create_dash_docset() {
+    local docset_basename="PHP_${lang}.docset"
+    local docset="$PHPDOC_BUILD/$docset_basename"
+
+    rm -rf "$docset"
+    mkdir -p "$docset/Contents/Resources"
+    cp -R "$1" "$docset/Contents/Resources/Documents"
+
+    cp "$ROOT/assets/icon.png" "$docset/"
+    cp "$ROOT/assets/icon@2x.png" "$docset/"
+
+    local lang_name=$(get_lang_name "$lang")
+    cat <<EOF > "$docset/Contents/Info.plist"
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>php.${lang}</string>
+	<key>CFBundleName</key>
+	<string>PHP (${lang_name})</string>
+	<key>DocSetPlatformFamily</key>
+	<string>php</string>
+	<key>dashIndexFilePath</key>
+	<string>index.html</string>
+	<key>isDashDocset</key>
+	<true/>
+</dict>
+</plist>
+EOF
+
+    local sql="$PHPDOC_BUILD/docset.sql"
+    cat <<EOF > "$sql"
+BEGIN TRANSACTION;
+CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);
+CREATE UNIQUE INDEX anchor ON searchIndex (name, type, path);
+COMMIT;
+EOF
+
+    echo 'BEGIN TRANSACTION;' >> "$sql"
+    # TODO
+    echo 'COMMIT;' >> "$sql"
+
+    sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql"
+    rm "$sql"
+
+    tar --exclude='.DS_Store' -czf "$OUTPUT/${docset_basename%.*}.tgz" -C "$(dirname "$docset")" "$docset_basename"
+    rm -rf "$OUTPUT/$docset_basename" && mv "$docset" "$OUTPUT/"
+    echo -e "\nCreated Dash docset at $OUTPUT/$docset_basename"
+}
+
 build_docset() {
     # Prepare styles and fonts
     rm -rf "$PHPDOC_BUILD/fonts"
@@ -115,8 +189,12 @@ build_docset() {
         --css "$PHPDOC/web-php/styles/theme-medium.css" \
         --css "$ROOT/assets/style.css"
 
-    mv "$PHPDOC_BUILD/fonts" "$PHPDOC_BUILD/php-enhancedchm/res/"
-    cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$PHPDOC_BUILD/php-enhancedchm/res/images/"
+    local root="$PHPDOC_BUILD/php-enhancedchm/res"
+
+    mv "$PHPDOC_BUILD/fonts" "$root/"
+    cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/images/"
+
+    create_dash_docset "$root"
 }
 
 build_mirror() {
@@ -142,6 +220,7 @@ build_mirror() {
 }
 
 main() {
+    mkdir -p "$OUTPUT"
     mkdir -p "$PHPDOC"
     mkdir -p "$PHPDOC_BUILD"
 
@@ -173,9 +252,9 @@ if [[ $# -gt 0 ]]; then
     done
 
     lang=$(echo "$lang" | tr '[:upper:]' '[:lower:]')
-    if [[ ! " ${SUPPORTED_LANGUAGES[*]} " =~ " $lang " ]]; then
+    if [[ ! " ${LANG_CODES[*]} " =~ " $lang " ]]; then
         echo -e "${RED}Error: unsupported language: ${lang}${NC}"
-        echo -e "${GREEN}Supported languages: ${SUPPORTED_LANGUAGES[*]}${NC}"
+        echo -e "${GREEN}Supported languages: ${LANG_CODES[*]}${NC}"
         exit 1
     fi
 fi
