@@ -25,13 +25,13 @@ LANG_NAMES=(
 
 # The root directory of this script
 ROOT="$(cd "$(dirname "$0")" && pwd)"
-# The output directory for generated docsets
-OUTPUT="$ROOT/output"
-
 # The root directory of the PHP doc repositories
 PHPDOC="$ROOT/phpdoc"
-# The build output directory for phpdoc
-PHPDOC_BUILD="$PHPDOC/build"
+
+# The output directory for generated docsets
+OUTPUT="$ROOT/output"
+# The working build directory
+BUILD="$PHPDOC/build"
 
 # The language to generate
 lang="en"
@@ -97,7 +97,7 @@ generate_docbook() {
 render_manual() {
     local format="$1"; shift
 
-    local output_dir="$PHPDOC_BUILD/php-"
+    local output_dir="$BUILD/php-"
     if [[ $format == "php" ]]; then
         output_dir+="web"
     else
@@ -110,7 +110,7 @@ render_manual() {
     (
         cd "$PHPDOC"
         php phd/render.php --docbook doc-base/.manual.xml \
-            --output "$PHPDOC_BUILD" \
+            --output "$BUILD" \
             --package PHP --format "$format" "$@"
     )
 
@@ -140,7 +140,7 @@ escape_sql_string() {
 # https://kapeli.com/docsets#dashDocset
 create_dash_docset() {
     local docset_basename="PHP_${lang}.docset"
-    local docset="$PHPDOC_BUILD/$docset_basename"
+    local docset="$BUILD/$docset_basename"
 
     rm -rf "$docset"
     mkdir -p "$docset/Contents/Resources"
@@ -169,7 +169,7 @@ create_dash_docset() {
 </plist>
 EOF
 
-    local sql="$PHPDOC_BUILD/docset.sql"
+    local sql="$BUILD/docset.sql"
     cat <<EOF > "$sql"
 BEGIN TRANSACTION;
 CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);
@@ -199,28 +199,28 @@ EOF
 
 build_docset() {
     # Prepare styles and fonts
-    rm -rf "$PHPDOC_BUILD/fonts"
-    cp -R "$PHPDOC/web-php/fonts" "$PHPDOC_BUILD/"
-    find "$PHPDOC_BUILD/fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
-    find "$PHPDOC_BUILD/fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
+    rm -rf "$BUILD/fonts"
+    cp -R "$PHPDOC/web-php/fonts" "$BUILD/"
+    find "$BUILD/fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
+    find "$BUILD/fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
 
     render_manual enhancedchm --forceindex --lang "$lang" \
-        --css "$PHPDOC_BUILD/fonts/Fira/fira.css" \
-        --css "$PHPDOC_BUILD/fonts/Font-Awesome/css/fontello.css" \
+        --css "$BUILD/fonts/Fira/fira.css" \
+        --css "$BUILD/fonts/Font-Awesome/css/fontello.css" \
         --css "$PHPDOC/web-php/styles/theme-base.css" \
         --css "$PHPDOC/web-php/styles/theme-medium.css" \
         --css "$ROOT/assets/style.css"
 
-    local root="$PHPDOC_BUILD/php-enhancedchm/res"
+    local root="$BUILD/php-enhancedchm/res"
 
-    mv "$PHPDOC_BUILD/fonts" "$root/"
+    mv "$BUILD/fonts" "$root/"
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/images/"
 
     create_dash_docset "$root"
 }
 
 build_mirror() {
-    local root="$PHPDOC_BUILD/php.net"
+    local root="$BUILD/php.net"
 
     render_manual php
 
@@ -238,7 +238,7 @@ build_mirror() {
     }
 
     rm -rf "$root/manual/$lang"
-    mv "$PHPDOC_BUILD/php-web" "$root/manual/$lang"
+    mv "$BUILD/php-web" "$root/manual/$lang"
 
     echo -e "\n${GREEN}Created php.net mirror at $root, you may run the web server via:${NC}"
     echo -e "${GREEN}(cd \"$root\" && php -S localhost:8080 .router.php)${NC}"
@@ -247,7 +247,7 @@ build_mirror() {
 main() {
     mkdir -p "$OUTPUT"
     mkdir -p "$PHPDOC"
-    mkdir -p "$PHPDOC_BUILD"
+    mkdir -p "$BUILD"
 
     fetch_repos
     generate_docbook
