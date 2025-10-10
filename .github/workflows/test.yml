@@ -1,0 +1,39 @@
+name: Test generate.sh
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Check env
+        run: |
+          php -v
+          pear version
+          sqlite3 --version
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show help
+        run: ./generate.sh -h
+
+      - name: Test unsupported language
+        run: '! ./generate.sh unsupported-lang'
+
+      - name: Test default generation
+        run: ./generate.sh
+
+      - run: ./generate.sh zh
+
+      - run: ./generate.sh --mirror
+      - run: ./generate.sh zh --mirror
