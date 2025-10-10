@@ -129,6 +129,13 @@ get_lang_name() {
     return 1
 }
 
+escape_sql_string() {
+    local s="$1"
+    s="${s//\'/''}"
+    s="${s//\\/\\\\}"
+    echo "$s"
+}
+
 # Create a Dash docset from the rendered HTML files: $root
 # https://kapeli.com/docsets#dashDocset
 create_dash_docset() {
@@ -171,7 +178,14 @@ COMMIT;
 EOF
 
     echo 'BEGIN TRANSACTION;' >> "$sql"
-    # TODO
+
+    local name="strlen"
+    local type="Function"
+    local path="function.strlen.html"
+    printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('%s', '%s', '%s');\n" \
+        "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
+        >> "$sql"
+
     echo 'COMMIT;' >> "$sql"
 
     sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql"
