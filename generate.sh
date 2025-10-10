@@ -41,7 +41,7 @@ mirror=false
 # Print script usage information
 usage() {
     cat <<EOF
-Generate Dash docset for the PHP Manual.
+Generate Dash docset for the PHP Manual in multiple languages.
 
 Usage: $(basename "$0") [LANG] [OPTIONS]
 
