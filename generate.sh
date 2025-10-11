@@ -42,6 +42,8 @@ no_usernotes=false
 skip_update=false
 # The output directory for generated docsets or php.net mirror
 OUTPUT="$ROOT/output"
+# Whether to display verbose output
+verbose=false
 
 # Print script usage information
 usage() {
@@ -61,6 +63,7 @@ Options:
   --no-usernotes    Exclude user-contributed notes from the manual.
   --skip-update     Skip cloning or updating PHP doc repositories.
   --output <dir>    Specify the output directory (default: '$OUTPUT').
+  --verbose         Display verbose output.
   help, -h, --help  Display this help message.
 EOF
 }
@@ -98,6 +101,44 @@ escape_sql_string() {
     echo "$s"
 }
 
+msg_main() {
+    echo -e "${GREEN}➤ $*${NC}"
+}
+
+msg_sub() {
+    echo -e "  ⏳ $*"
+}
+
+msg_done() {
+    echo -e "${GREEN}✔ $*${NC}"
+}
+
+msg_error() {
+    echo -e "${RED}❌ $*${NC}" >&2
+}
+
+# Run a shell command with optional verbose output: $cmd
+run() {
+    local cmd="$1"
+    shift
+
+    if [[ "${verbose:-false}" == true ]]; then
+        "$cmd" "$@"
+    else
+        case "$cmd" in
+            wget)
+                "$cmd" -q "$@"
+                ;;
+            curl)
+                "$cmd" -sS "$@"
+                ;;
+            *)
+                "$cmd" "$@" > /dev/null
+                ;;
+        esac
+    fi
+}
+
 # Clone or update a git repository: $repo [$path]
 clone_or_update() {
     (
@@ -109,19 +150,19 @@ clone_or_update() {
         if [ -d "$path" ]; then
             (
                 cd "$path"
-                git fetch origin
-                git reset --hard origin/$(git symbolic-ref --short HEAD)
-                git clean -dxfq
+                run git fetch origin
+                run git reset --hard origin/$(git symbolic-ref --short HEAD)
+                run git clean -dxfq
             )
         else
-            git clone "$repo" "$path"
+            run git clone "$repo" "$path"
         fi
     )
 }
 
 # Update the required git repositories
 update_repos() {
-    echo -e "${GREEN}Updating PHP doc repositories...${NC}"
+    msg_main "Updating PHP doc repositories..."
 
     clone_or_update "https://github.com/php/doc-base.git"
     clone_or_update "https://github.com/php/doc-en.git" en
@@ -140,7 +181,7 @@ build_docbook() {
     local lang="$1"
     (
         cd "$PHPDOC"
-        php doc-base/configure.php --with-lang="$lang"
+        run php doc-base/configure.php --with-lang="$lang"
     )
 }
 
@@ -159,7 +200,7 @@ render_docbook() {
     git -C "$PHPDOC/phd" apply "$ROOT/assets/phd.patch"
 
     rm -rf "$dest"
-    php "$PHPDOC/phd/render.php" --docbook "$PHPDOC/doc-base/.manual.xml" \
+    run php "$PHPDOC/phd/render.php" --docbook "$PHPDOC/doc-base/.manual.xml" \
         --output "$(dirname "$dest")" --package PHP --format "$format" "$@"
 
     git -C "$PHPDOC/phd" reset --hard -q
@@ -228,14 +269,14 @@ EOF
     rm -rf "$output_docset"
     mv "$docset" "$output_docset"
 
-    echo -e "${GREEN}Generated PHP Dash docset (${lang_name}) at: $output_docset${NC}"
+    msg_done "Generated PHP Dash docset (${lang_name}) at: $output_docset"
 }
 
 # Generate the docset for a specific language: $lang
 generate_docset() {
     local lang="$1"
 
-    echo -e "${GREEN}Generating PHP Dash docset for language: $lang ($(get_lang_name "$lang"))...${NC}"
+    msg_main "Generating PHP Dash docset for language: $lang ($(get_lang_name "$lang"))..."
 
     build_docbook "$lang"
 
@@ -277,23 +318,24 @@ generate_docsets() {
 generate_mirror() {
     local root="$BUILD/php.net"
 
-    echo -e "${GREEN}Generating php.net mirror...${NC}"
+    msg_main "Generating php.net mirror..."
 
     rsync -aq --delete --exclude='.git' "$PHPDOC/web-php/" "$root/"
 
-    # Download php.net pre-generated files
+    msg_sub "Downloading php.net pre-generated files..."
     # See https://wiki.php.net/web/mirror
     (
         cd "$root"
         # Some files are pre-generated on master.php.net for various reasons
-        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do wget "https://www.php.net/include/$i" -O $i; done;)
-        (cd backend && for i in ip-to-country.db ip-to-country.idx; do wget "https://www.php.net/backend/$i" -O $i; done;)
-    ) &>/dev/null || {
-        echo -e "${RED}Error: Failed to download php.net pre-generated files.${NC}" >&2
+        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do run wget "https://www.php.net/include/$i" -O $i; done;)
+        (cd backend && for i in ip-to-country.db ip-to-country.idx; do run wget "https://www.php.net/backend/$i" -O $i; done;)
+    ) || {
+        msg_error "Failed to download php.net pre-generated files."
         exit 4
     }
 
     for lang in "${LANGS[@]}"; do
+        msg_sub "Build PHP documentation for language: $lang ($(get_lang_name "$lang"))..."
         build_docbook "$lang"
         render_docbook php
         local output="$BUILD/php-web"
@@ -305,8 +347,8 @@ generate_mirror() {
     local output_mirror="$OUTPUT/php.net"
     rsync -aq --delete "$root/" "$output_mirror/"
 
-    echo -e "${GREEN}Generated php.net mirror at $output_mirror, you may run the web server via:${NC}"
-    echo -e "${GREEN}(cd \"$output_mirror\" && php -S localhost:8080 .router.php)${NC}"
+    msg_done "Generated php.net mirror at $output_mirror, you may run the web server via:
+(cd \"$output_mirror\" && php -S localhost:8080 .router.php)"
 }
 
 main() {
@@ -341,11 +383,15 @@ while [[ $# -gt 0 ]]; do
             ;;
         --output)
             if [[ $# -lt 2 ]]; then
-                echo -e "${RED}Error: --output requires a directory argument.${NC}" >&2
+                msg_error "Error: --output requires a directory argument."
                 exit 1
             fi
             OUTPUT="$2"
             shift 2
+            ;;
+        --verbose)
+            verbose=true
+            shift
             ;;
         help|-h|--help)
             usage
@@ -360,7 +406,7 @@ while [[ $# -gt 0 ]]; do
                 fi
                 shift
             else
-                echo -e "${RED}Error: unsupported argument or language code: ${arg}${NC}" >&2
+                msg_error "Error: unsupported argument or language code: ${arg}"
                 usage
                 exit 1
             fi
