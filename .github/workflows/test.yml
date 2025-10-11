@@ -78,7 +78,7 @@ jobs:
           rm -rf output
           ./generate.sh --no-usernotes zh
           test -d output/PHP_zh.docset
-          local file="output/PHP_zh.docset/Contents/Resources/Documents/function.strlen.html"
+          file="output/PHP_zh.docset/Contents/Resources/Documents/function.strlen.html"
           ! grep -q '<div id="usernotes">' "$file" || echo "❌ Found usernotes in $file"
 
       - name: Test --skip-update option
