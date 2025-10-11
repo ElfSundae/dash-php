@@ -75,9 +75,12 @@ clone_or_pull() {
         local path="${2:-$(basename "$repo" .git)}"
 
         if [ -d "$path" ]; then
-            git -C "$path" clean -dxfq
-            git -C "$path" reset --hard
-            git -C "$path" pull
+            (
+                cd "$path"
+                git fetch origin
+                git reset --hard origin/$(git symbolic-ref --short HEAD)
+                git clean -dxfq
+            )
         else
             git clone "$repo" "$path"
         fi
