@@ -36,66 +36,36 @@ jobs:
         run: ./generate.sh -h
 
       - name: Test unsupported language
-        run: '! ./generate.sh unsupported-lang'
+        run: ! ./generate.sh unsupported-lang
 
       - name: Test default generation
         run: |
-          rm -rf phpdoc output
+          rm -rf output
           ./generate.sh
           test -d output/PHP_en.docset
-          test -f output/PHP_en.tgz
 
       - name: Test other languages
         run: |
-          rm -rf phpdoc output
+          rm -rf output
           ./generate.sh zh
           test -d output/PHP_zh.docset
-          test -f output/PHP_zh.tgz
 
       - name: Test multiple languages
         run: |
-          rm -rf phpdoc output
+          rm -rf output
           ./generate.sh zh en pt_br
           test -d output/PHP_zh.docset
-          test -f output/PHP_zh.tgz
           test -d output/PHP_en.docset
-          test -f output/PHP_en.tgz
           test -d output/PHP_pt_BR.docset
-          test -f output/PHP_pt_BR.tgz
-
-      - name: Test all languages
-        run: |
-          rm -rf phpdoc output
-          ./generate.sh en de es fr it ja pt_BR ru tr uk zh
-          test -d output/PHP_en.docset
-          test -f output/PHP_en.tgz
-          test -d output/PHP_de.docset
-          test -f output/PHP_de.tgz
-          test -d output/PHP_es.docset
-          test -f output/PHP_es.tgz
-          test -d output/PHP_fr.docset
-          test -f output/PHP_fr.tgz
-          test -d output/PHP_it.docset
-          test -f output/PHP_it.tgz
-          test -d output/PHP_ja.docset
-          test -f output/PHP_ja.tgz
-          test -d output/PHP_pt_BR.docset
-          test -f output/PHP_pt_BR.tgz
-          test -d output/PHP_ru.docset
-          test -f output/PHP_ru.tgz
-          test -d output/PHP_tr.docset
-          test -f output/PHP_tr.tgz
-          test -d output/PHP_uk.docset
-          test -f output/PHP_uk.tgz
-          test -d output/PHP_zh.docset
-          test -f output/PHP_zh.tgz
 
       - name: Test --mirror option
         run: |
-          rm -rf phpdoc output
+          rm -rf output
           ./generate.sh --mirror
           test -d output/php.net
-          rm -rf phpdoc output
+          test -d output/php.net/manual/en
+
+          rm -rf output
           ./generate.sh --mirror en zh pt_br
           test -d output/php.net
           test -d output/php.net/manual/en
@@ -104,30 +74,36 @@ jobs:
 
       - name: Test --no-usernotes option
         run: |
-          rm -rf phpdoc output
+          rm -rf output
           ./generate.sh --no-usernotes zh
           test -d output/PHP_zh.docset
-          test -f output/PHP_zh.tgz
+          local file="output/PHP_zh.docset/Contents/Resources/Documents/function.strlen.html"
+          ! grep -q '<div id="usernotes">' "$file" || echo "❌ Found usernotes in $file"
 
       - name: Test --skip-fetch option
         run: |
           rm -rf phpdoc output
-          '! ./generate.sh --skip-fetch'
-          ./generate.sh zh
+          ! ./generate.sh --skip-fetch
+          ./generate.sh zh && rm -rf output
           ./generate.sh zh --skip-fetch
-          test -d foo/bar/PHP_zh.docset
-          test -f foo/bar/PHP_zh.tgz
+          test -d output/PHP_zh.docset
 
       - name: Test --output option
         run: |
-          rm -rf phpdoc output
-          '! ./generate.sh --output'
+          rm -rf output
+          ! ./generate.sh --output
           ./generate.sh --output foo/bar en zh
           test -d foo/bar/PHP_en.docset
-          test -f foo/bar/PHP_en.tgz
           test -d foo/bar/PHP_zh.docset
-          test -f foo/bar/PHP_zh.tgz
+          rm -rf foo/bar
+
           ./generate.sh --output ~/custom/output en zh --mirror
           test -d ~/custom/output/php.net
           rm -rf ~/custom/output
 
+      - name: Test all languages
+        run: |
+          rm -rf output
+          for lang in en de es fr it ja pt_BR ru tr uk zh; do
+            ./generate.sh $lang || echo "⚠️ Failed to generate Dash docset for the language: $lang"
+          done

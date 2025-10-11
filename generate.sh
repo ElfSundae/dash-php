@@ -225,14 +225,10 @@ EOF
 
     mkdir -p "$OUTPUT"
     local output_docset="$OUTPUT/$docset_basename"
-    local output_docset_archive="$OUTPUT/${docset_basename%.*}.tgz"
-
-    tar --exclude='.DS_Store' -czf "$output_docset_archive" -C "$(dirname "$docset")" "$(basename "$docset")"
     rm -rf "$output_docset"
     mv "$docset" "$output_docset"
 
-    echo -e "${GREEN}Generated PHP Dash docset at: $output_docset${NC}"
-    echo -e "${GREEN}Generated PHP Dash docset archive at: $output_docset_archive${NC}"
+    echo -e "${GREEN}Generated PHP Dash docset (${lang_name}) at: $output_docset${NC}"
 }
 
 # Generate the docset for a specific language: $lang
