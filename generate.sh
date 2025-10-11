@@ -119,23 +119,10 @@ msg_error() {
 
 # Run a shell command with optional verbose output: $cmd
 run() {
-    local cmd="$1"
-    shift
-
     if [[ "${verbose:-false}" == true ]]; then
-        "$cmd" "$@"
+        "$@"
     else
-        case "$cmd" in
-            wget)
-                "$cmd" -q "$@"
-                ;;
-            curl)
-                "$cmd" -sS "$@"
-                ;;
-            *)
-                "$cmd" "$@" > /dev/null
-                ;;
-        esac
+        "$@" >/dev/null 2>&1
     fi
 }
 
