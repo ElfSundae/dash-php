@@ -80,12 +80,12 @@ jobs:
           local file="output/PHP_zh.docset/Contents/Resources/Documents/function.strlen.html"
           ! grep -q '<div id="usernotes">' "$file" || echo "❌ Found usernotes in $file"
 
-      - name: Test --skip-fetch option
+      - name: Test --skip-update option
         run: |
           rm -rf phpdoc output
-          ! ./generate.sh --skip-fetch
+          ! ./generate.sh --skip-update
           ./generate.sh zh && rm -rf output
-          ./generate.sh zh --skip-fetch
+          ./generate.sh zh --skip-update
           test -d output/PHP_zh.docset
 
       - name: Test --output option

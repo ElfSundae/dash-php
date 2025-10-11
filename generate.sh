@@ -39,7 +39,7 @@ mirror=false
 # Whether to exclude user-contributed notes from the manual
 no_usernotes=false
 # Whether to skip fetching or updating PHP doc repositories
-skip_fetch=false
+skip_update=false
 # The output directory for generated docsets or php.net mirror
 OUTPUT="$ROOT/output"
 
@@ -59,7 +59,7 @@ Arguments:
 Options:
   --mirror          Generate a php.net mirror instead of docsets.
   --no-usernotes    Exclude user-contributed notes from the manual.
-  --skip-fetch      Skip fetching or updating PHP doc repositories.
+  --skip-update     Skip cloning or updating PHP doc repositories.
   --output <dir>    Specify the output directory (default: '$OUTPUT').
   help, -h, --help  Display this help message.
 EOF
@@ -98,8 +98,8 @@ escape_sql_string() {
     echo "$s"
 }
 
-# Clone or pull a git repository: $repo [$path]
-clone_or_pull() {
+# Clone or update a git repository: $repo [$path]
+clone_or_update() {
     (
         cd "$PHPDOC"
 
@@ -119,18 +119,18 @@ clone_or_pull() {
     )
 }
 
-# Fetch or update the required git repositories
-fetch_repos() {
+# Update the required git repositories
+update_repos() {
     echo -e "${GREEN}Fetching or updating PHP doc repositories...${NC}"
 
-    clone_or_pull "https://github.com/php/doc-base.git"
-    clone_or_pull "https://github.com/php/doc-en.git" en
-    clone_or_pull "https://github.com/php/phd.git"
-    clone_or_pull "https://github.com/php/web-php.git"
+    clone_or_update "https://github.com/php/doc-base.git"
+    clone_or_update "https://github.com/php/doc-en.git" en
+    clone_or_update "https://github.com/php/phd.git"
+    clone_or_update "https://github.com/php/web-php.git"
 
     for lang in "${LANGS[@]}"; do
         if [[ "$lang" != "en" ]]; then
-            clone_or_pull "https://github.com/php/doc-${lang}.git" "$lang"
+            clone_or_update "https://github.com/php/doc-${lang}.git" "$lang"
         fi
     done
 }
@@ -156,7 +156,7 @@ render_docbook() {
         dest+="$format"
     fi
 
-    git -C "$PHPDOC/phd" apply "$ROOT"/assets/phd.patch
+    git -C "$PHPDOC/phd" apply "$ROOT/assets/phd.patch"
 
     rm -rf "$dest"
     php "$PHPDOC/phd/render.php" --docbook "$PHPDOC/doc-base/.manual.xml" \
@@ -312,8 +312,8 @@ generate_mirror() {
 main() {
     mkdir -p "$PHPDOC"
 
-    if [[ "$skip_fetch" == false ]]; then
-        fetch_repos
+    if [[ "$skip_update" == false ]]; then
+        update_repos
     fi
 
     if [[ "$mirror" == false ]]; then
@@ -335,8 +335,8 @@ while [[ $# -gt 0 ]]; do
             no_usernotes=true
             shift
             ;;
-        --skip-fetch)
-            skip_fetch=true
+        --skip-update)
+            skip_update=true
             shift
             ;;
         --output)
