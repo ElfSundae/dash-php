@@ -121,7 +121,7 @@ clone_or_update() {
 
 # Update the required git repositories
 update_repos() {
-    echo -e "${GREEN}Fetching or updating PHP doc repositories...${NC}"
+    echo -e "${GREEN}Updating PHP doc repositories...${NC}"
 
     clone_or_update "https://github.com/php/doc-base.git"
     clone_or_update "https://github.com/php/doc-en.git" en
