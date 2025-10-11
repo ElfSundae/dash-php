@@ -30,7 +30,7 @@ jobs:
           sqlite3 --version
 
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Show help
         run: ./generate.sh -h
@@ -39,9 +39,54 @@ jobs:
         run: '! ./generate.sh unsupported-lang'
 
       - name: Test default generation
-        run: ./generate.sh
+        run: |
+          git clean -dxf
+          ./generate.sh
+          test -d output/PHP_en.docset
+          test -f output/PHP_en.tgz
 
-      - run: ./generate.sh zh
+      - name: Test other languages
+        run: |
+          git clean -dxf
+          ./generate.sh zh
+          test -d output/PHP_zh.docset
+          test -f output/PHP_zh.tgz
 
-      - run: ./generate.sh --mirror
-      - run: ./generate.sh zh --mirror
+      - name: Test multiple languages
+        run: |
+          git clean -dxf
+          ./generate.sh en zh ja
+          test -d output/PHP_en.docset
+          test -f output/PHP_en.tgz
+          test -d output/PHP_zh.docset
+          test -f output/PHP_zh.tgz
+          test -d output/PHP_ja.docset
+          test -f output/PHP_ja.tgz
+
+      - name: Test --mirror option
+        run: |
+          git clean -dxf
+          ./generate.sh --mirror
+          test -d output/php.net
+          git clean -dxf
+          ./generate.sh --mirror en zh ja
+          test -d output/php.net
+
+      - name: Test --output option
+        run: |
+          git clean -dxf
+          ./generate.sh --output foo/bar en zh
+          test -d foo/bar/PHP_en.docset
+          test -f foo/bar/PHP_en.tgz
+          test -d foo/bar/PHP_zh.docset
+          test -f foo/bar/PHP_zh.tgz
+          ./generate.sh --output ~/custom/output en zh --mirror
+          test -d ~/custom/output/php.net
+          rm -rf ~/custom/output
+
+      - name: Test --no-usernotes option
+        run: |
+          git clean -dxf
+          ./generate.sh --no-usernotes zh
+          test -d output/PHP_zh.docset
+          test -f output/PHP_zh.tgz

@@ -28,29 +28,40 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 # The root directory of the PHP doc repositories
 PHPDOC="$ROOT/phpdoc"
 
-# The output directory for generated docsets
-OUTPUT="$ROOT/output"
 # The working build directory
-BUILD="$PHPDOC/build"
+BUILD=$(mktemp -d)
+trap 'rm -rf "$BUILD"' EXIT
 
-# The language to generate
-lang="en"
-# Whether to create a php.net mirror during generation
+### Flags and variables for options
+# The languages to generate
+LANGS=()
+# The output directory for generated docsets or php.net mirror
+OUTPUT="$ROOT/output"
+# Whether to generate a php.net mirror instead of docsets
 mirror=false
+# Whether to exclude user-contributed notes from the manual
+no_usernotes=false
+# Whether to skip fetching or updating PHP doc repositories
+skip_fetch=false
 
 # Print script usage information
 usage() {
     cat <<EOF
 Generate Dash docset for the PHP Manual in multiple languages.
 
-Usage: $(basename "$0") [LANG] [OPTIONS]
+Usage: $(basename "$0") [LANG...] [OPTIONS]
 
 Arguments:
-  LANG      Language code for the PHP Manual to generate, defaults to '${lang}'.
-            Supported languages: ${LANG_CODES[*]}
+  LANG          Language code(s) for the PHP Manual to generate.
+                You can specify multiple languages separated by space.
+                Supported languages: ${LANG_CODES[*]}
+                (default: 'en')
 
 Options:
-  --mirror          Create a php.net mirror during generation.
+  --output <dir>    Specify the output directory (default: '$OUTPUT').
+  --mirror          Generate a php.net mirror instead of docsets.
+  --no-usernotes    Exclude user-contributed notes from the manual.
+  --skip-fetch      Skip fetching or updating PHP doc repositories.
   help, -h, --help  Display this help message.
 EOF
 }
@@ -75,44 +86,46 @@ clone_or_pull() {
 
 # Fetch or update the required git repositories
 fetch_repos() {
+    echo -e "${GREEN}Fetching or updating PHP doc repositories...${NC}"
+
     clone_or_pull "https://github.com/php/doc-base.git"
     clone_or_pull "https://github.com/php/doc-en.git" en
     clone_or_pull "https://github.com/php/phd.git"
     clone_or_pull "https://github.com/php/web-php.git"
 
-    if [[ "$lang" != "en" ]]; then
-        clone_or_pull "https://github.com/php/doc-${lang}.git" "$lang"
-    fi
+    for lang in "${LANGS[@]}"; do
+        if [[ "$lang" != "en" ]]; then
+            clone_or_pull "https://github.com/php/doc-${lang}.git" "$lang"
+        fi
+    done
 }
 
-# Generate the Docbook XML file: doc-base/.manual.xml
-generate_docbook() {
+# Build the Docbook XML file doc-base/.manual.xml for the specified language: $lang
+build_docbook() {
+    local lang="$1"
     (
         cd "$PHPDOC"
         php doc-base/configure.php --with-lang="$lang"
     )
 }
 
-# Render the PHP manual in the specified format with phd: $format [options]...
-render_manual() {
+# Render the Docbook XML file to the specified format: $format [options...]
+# Supported formats: php, xhtml, chm, enhancedchm
+render_docbook() {
     local format="$1"; shift
 
-    local output_dir="$BUILD/php-"
+    local dest="$BUILD/php-"
     if [[ $format == "php" ]]; then
-        output_dir+="web"
+        dest+="web"
     else
-        output_dir+="$format"
+        dest+="$format"
     fi
-    rm -rf "$output_dir"
 
     git -C "$PHPDOC/phd" apply "$ROOT"/assets/phd.patch
 
-    (
-        cd "$PHPDOC"
-        php phd/render.php --docbook doc-base/.manual.xml \
-            --output "$BUILD" \
-            --package PHP --format "$format" "$@"
-    )
+    rm -rf "$dest"
+    php "$PHPDOC/phd/render.php" --docbook "$PHPDOC/doc-base/.manual.xml" \
+        --output "$(dirname "$dest")" --package PHP --format "$format" "$@"
 
     git -C "$PHPDOC/phd" reset --hard -q
 }
@@ -136,15 +149,18 @@ escape_sql_string() {
     echo "$s"
 }
 
-# Create a Dash docset from the rendered HTML files: $root
+# Create a Dash docset from the rendered HTML files: $source $lang
 # https://kapeli.com/docsets#dashDocset
 create_dash_docset() {
+    local source="$1"
+    local lang="$2"
+
     local docset_basename="PHP_${lang}.docset"
     local docset="$BUILD/$docset_basename"
 
     rm -rf "$docset"
     mkdir -p "$docset/Contents/Resources"
-    cp -R "$1" "$docset/Contents/Resources/Documents"
+    cp -R "$source" "$docset/Contents/Resources/Documents"
 
     cp "$ROOT/assets/icon.png" "$docset/"
     cp "$ROOT/assets/icon@2x.png" "$docset/"
@@ -169,7 +185,7 @@ create_dash_docset() {
 </plist>
 EOF
 
-    local sql="$BUILD/docset.sql"
+    local sql="$docset.sql"
     cat <<EOF > "$sql"
 BEGIN TRANSACTION;
 CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);
@@ -191,41 +207,69 @@ EOF
     sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql"
     rm "$sql"
 
-    tar --exclude='.DS_Store' -czf "$OUTPUT/${docset_basename%.*}.tgz" -C "$(dirname "$docset")" "$docset_basename"
-    rm -rf "$OUTPUT/$docset_basename" && mv "$docset" "$OUTPUT/"
+    mkdir -p "$OUTPUT"
+    local output_docset="$OUTPUT/$docset_basename"
+    local output_docset_archive="$OUTPUT/${docset_basename%.*}.tgz"
 
-    echo -e "\n${GREEN}Created Dash docset at $OUTPUT/$docset_basename${NC}"
+    tar --exclude='.DS_Store' -czf "$output_docset_archive" -C "$(dirname "$docset")" "$(basename "$docset")"
+    rm -rf "$output_docset"
+    mv "$docset" "$output_docset"
+
+    echo -e "${GREEN}Generated PHP Dash docset at: $output_docset${NC}"
+    echo -e "${GREEN}Generated PHP Dash docset archive at: $output_docset_archive${NC}"
 }
 
-build_docset() {
-    # Prepare styles and fonts
-    rm -rf "$BUILD/fonts"
-    cp -R "$PHPDOC/web-php/fonts" "$BUILD/"
-    find "$BUILD/fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
-    find "$BUILD/fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
+# Generate the docset for a specific language: $lang
+generate_docset() {
+    local lang="$1"
 
-    render_manual enhancedchm --forceindex --lang "$lang" \
-        --css "$BUILD/fonts/Fira/fira.css" \
-        --css "$BUILD/fonts/Font-Awesome/css/fontello.css" \
+    echo -e "${GREEN}Generating PHP Dash docset for language: $lang ($(get_lang_name "$lang"))...${NC}"
+
+    build_docbook "$lang"
+
+    # Prepare styles and fonts
+    local fonts="$BUILD/fonts"
+    rm -rf "$fonts"
+    cp -R "$PHPDOC/web-php/fonts" "$fonts"
+    find "$fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
+    find "$fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
+
+    local format="enhancedchm"
+    if [[ "$no_usernotes" == true ]]; then
+        format="chm"
+    fi
+
+    render_docbook "$format" --lang "$lang" \
+        --css "$fonts/Fira/fira.css" \
+        --css "$fonts/Font-Awesome/css/fontello.css" \
         --css "$PHPDOC/web-php/styles/theme-base.css" \
         --css "$PHPDOC/web-php/styles/theme-medium.css" \
         --css "$ROOT/assets/style.css"
 
-    local root="$BUILD/php-enhancedchm/res"
+    local root="$BUILD/php-$format"
+    mv "$fonts" "$root/res/"
+    cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
-    mv "$BUILD/fonts" "$root/"
-    cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/images/"
-
-    create_dash_docset "$root"
+    create_dash_docset "$root/res" "$lang"
+    rm -rf "$root"
 }
 
-build_mirror() {
+# Generate Dash docsets for all specified languages
+generate_docsets() {
+    for lang in "${LANGS[@]}"; do
+        generate_docset "$lang"
+    done
+}
+
+# Generate a php.net mirror in the output directory
+generate_mirror() {
     local root="$BUILD/php.net"
 
-    render_manual php
+    echo -e "${GREEN}Generating php.net mirror...${NC}"
 
     rsync -aq --delete --exclude='.git' "$PHPDOC/web-php/" "$root/"
 
+    # Download php.net pre-generated files
     # See https://wiki.php.net/web/mirror
     (
         cd "$root"
@@ -233,55 +277,88 @@ build_mirror() {
         (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do wget "https://www.php.net/include/$i" -O $i; done;)
         (cd backend && for i in ip-to-country.db ip-to-country.idx; do wget "https://www.php.net/backend/$i" -O $i; done;)
     ) &>/dev/null || {
-        echo -e "${RED}Error: Failed to download php.net mirror files.${NC}" >&2
+        echo -e "${RED}Error: Failed to download php.net pre-generated files.${NC}" >&2
         exit 4
     }
 
-    rm -rf "$root/manual/$lang"
-    mv "$BUILD/php-web" "$root/manual/$lang"
+    for lang in "${LANGS[@]}"; do
+        build_docbook "$lang"
+        render_docbook php
+        local output="$BUILD/php-web"
+        rm -rf "$root/manual/$lang"
+        mv "$output" "$root/manual/$lang"
+    done
 
-    echo -e "\n${GREEN}Created php.net mirror at $root, you may run the web server via:${NC}"
-    echo -e "${GREEN}(cd \"$root\" && php -S localhost:8080 .router.php)${NC}"
+    mkdir -p "$OUTPUT"
+    local output_mirror="$OUTPUT/php.net"
+    rsync -aq --delete "$root/" "$output_mirror/"
+
+    echo -e "${GREEN}Generated php.net mirror at $output_mirror, you may run the web server via:${NC}"
+    echo -e "${GREEN}(cd \"$output_mirror\" && php -S localhost:8080 .router.php)${NC}"
 }
 
 main() {
-    mkdir -p "$OUTPUT"
     mkdir -p "$PHPDOC"
-    mkdir -p "$BUILD"
 
-    fetch_repos
-    generate_docbook
+    if [[ "$skip_fetch" == false ]]; then
+        fetch_repos
+    fi
 
-    build_docset
-
-    if [[ "$mirror" == true ]]; then
-        build_mirror
+    if [[ "$mirror" == false ]]; then
+        generate_docsets
+    else
+        generate_mirror
     fi
 }
 
-# Handle user input and arguments
-if [[ $# -gt 0 ]]; then
-    for arg in "$@"; do
-        case "$arg" in
-            --mirror)
-                mirror=true
-                ;;
-            help|-h|--help)
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    arg="$1"
+    case "$arg" in
+        --output)
+            if [[ $# -lt 2 ]]; then
+                echo -e "${RED}Error: --output requires a directory argument.${NC}" >&2
+                exit 1
+            fi
+            OUTPUT="$2"
+            shift 2
+            ;;
+        --mirror)
+            mirror=true
+            shift
+            ;;
+        --no-usernotes)
+            no_usernotes=true
+            shift
+            ;;
+        --skip-fetch)
+            skip_fetch=true
+            shift
+            ;;
+        help|-h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            # Check if argument is a supported language code
+            lower_arg=$(echo "$arg" | tr '[:upper:]' '[:lower:]')
+            if [[ " ${LANG_CODES[*]} " =~ " ${lower_arg} " ]]; then
+                if [[ ${#LANGS[@]} -gt 0 ]] && [[ ! " ${LANGS[*]} " =~ " ${lower_arg} " ]]; then
+                    LANGS+=("$lower_arg")
+                fi
+                shift
+            else
+                echo -e "${RED}Error: unsupported argument or language code: ${arg}${NC}" >&2
                 usage
-                exit 0
-                ;;
-            *)
-                lang="$arg"
-                ;;
-        esac
-    done
+                exit 1
+            fi
+            ;;
+    esac
+done
 
-    lang=$(echo "$lang" | tr '[:upper:]' '[:lower:]')
-    if [[ ! " ${LANG_CODES[*]} " =~ " $lang " ]]; then
-        echo -e "${RED}Error: unsupported language: ${lang}${NC}" >&2
-        echo -e "Supported languages: ${LANG_CODES[*]}" >&2
-        exit 1
-    fi
+# Default to 'en' if no languages are specified
+if [[ ${#LANGS[@]} -eq 0 ]]; then
+    LANGS=("en")
 fi
 
 main
