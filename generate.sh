@@ -209,6 +209,8 @@ render_docbook() {
 # Create a Dash docset from the rendered HTML files: $source $lang
 # https://kapeli.com/docsets#dashDocset
 create_dash_docset() {
+    msg_sub "Creating Dash docset..."
+
     local source="$1"
     local lang="$2"
 
@@ -278,6 +280,8 @@ generate_docset() {
 
     msg_main "Generating PHP Dash docset for language: $lang ($(get_lang_name "$lang"))..."
 
+    msg_sub "Building PHP documentation..."
+
     build_docbook "$lang"
 
     # Prepare styles and fonts
@@ -335,7 +339,7 @@ generate_mirror() {
     }
 
     for lang in "${LANGS[@]}"; do
-        msg_sub "Build PHP documentation for language: $lang ($(get_lang_name "$lang"))..."
+        msg_sub "Building PHP documentation for language: $lang ($(get_lang_name "$lang"))..."
         build_docbook "$lang"
         render_docbook php
         local output="$BUILD/php-web"
