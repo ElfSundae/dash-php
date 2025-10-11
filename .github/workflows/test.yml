@@ -36,7 +36,8 @@ jobs:
         run: ./generate.sh -h
 
       - name: Test unsupported language
-        run: ! ./generate.sh unsupported-lang
+        run: |
+          ! ./generate.sh unsupported-lang
 
       - name: Test default generation
         run: |
