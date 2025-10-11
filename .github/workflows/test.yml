@@ -40,41 +40,88 @@ jobs:
 
       - name: Test default generation
         run: |
-          git clean -dxf; rm -rf phpdoc
+          rm -rf phpdoc output
           ./generate.sh
           test -d output/PHP_en.docset
           test -f output/PHP_en.tgz
 
       - name: Test other languages
         run: |
-          git clean -dxf; rm -rf phpdoc
+          rm -rf phpdoc output
           ./generate.sh zh
           test -d output/PHP_zh.docset
           test -f output/PHP_zh.tgz
 
       - name: Test multiple languages
         run: |
-          git clean -dxf; rm -rf phpdoc
-          ./generate.sh en zh ja
-          test -d output/PHP_en.docset
-          test -f output/PHP_en.tgz
+          rm -rf phpdoc output
+          ./generate.sh zh en pt_br
           test -d output/PHP_zh.docset
           test -f output/PHP_zh.tgz
+          test -d output/PHP_en.docset
+          test -f output/PHP_en.tgz
+          test -d output/PHP_pt_BR.docset
+          test -f output/PHP_pt_BR.tgz
+
+      - name: Test all languages
+        run: |
+          rm -rf phpdoc output
+          ./generate.sh en de es fr it ja pt_BR ru tr uk zh
+          test -d output/PHP_en.docset
+          test -f output/PHP_en.tgz
+          test -d output/PHP_de.docset
+          test -f output/PHP_de.tgz
+          test -d output/PHP_es.docset
+          test -f output/PHP_es.tgz
+          test -d output/PHP_fr.docset
+          test -f output/PHP_fr.tgz
+          test -d output/PHP_it.docset
+          test -f output/PHP_it.tgz
           test -d output/PHP_ja.docset
           test -f output/PHP_ja.tgz
+          test -d output/PHP_pt_BR.docset
+          test -f output/PHP_pt_BR.tgz
+          test -d output/PHP_ru.docset
+          test -f output/PHP_ru.tgz
+          test -d output/PHP_tr.docset
+          test -f output/PHP_tr.tgz
+          test -d output/PHP_uk.docset
+          test -f output/PHP_uk.tgz
+          test -d output/PHP_zh.docset
+          test -f output/PHP_zh.tgz
 
       - name: Test --mirror option
         run: |
-          git clean -dxf; rm -rf phpdoc
+          rm -rf phpdoc output
           ./generate.sh --mirror
           test -d output/php.net
-          git clean -dxf; rm -rf phpdoc
-          ./generate.sh --mirror en zh ja
+          rm -rf phpdoc output
+          ./generate.sh --mirror en zh pt_br
           test -d output/php.net
+          test -d output/php.net/manual/en
+          test -d output/php.net/manual/zh
+          test -d output/php.net/manual/pt_BR
+
+      - name: Test --no-usernotes option
+        run: |
+          rm -rf phpdoc output
+          ./generate.sh --no-usernotes zh
+          test -d output/PHP_zh.docset
+          test -f output/PHP_zh.tgz
+
+      - name: Test --skip-fetch option
+        run: |
+          rm -rf phpdoc output
+          '! ./generate.sh --skip-fetch'
+          ./generate.sh zh
+          ./generate.sh zh --skip-fetch
+          test -d foo/bar/PHP_zh.docset
+          test -f foo/bar/PHP_zh.tgz
 
       - name: Test --output option
         run: |
-          git clean -dxf; rm -rf phpdoc
+          rm -rf phpdoc output
+          '! ./generate.sh --output'
           ./generate.sh --output foo/bar en zh
           test -d foo/bar/PHP_en.docset
           test -f foo/bar/PHP_en.tgz
@@ -84,9 +131,3 @@ jobs:
           test -d ~/custom/output/php.net
           rm -rf ~/custom/output
 
-      - name: Test --no-usernotes option
-        run: |
-          git clean -dxf; rm -rf phpdoc
-          ./generate.sh --no-usernotes zh
-          test -d output/PHP_zh.docset
-          test -f output/PHP_zh.tgz

@@ -13,14 +13,13 @@ else
     SED_INPLACE=(-i)
 fi
 
-# Supported languages: https://github.com/php/doc-en?tab=readme-ov-file#translations
-LANG_CODES=(
-    "pt_br" "zh" "en" "fr" "de" "it"
-    "ja" "pl" "ro" "ru" "es" "tr" "uk"
-)
+# Supported languages: https://github.com/php/web-php/blob/master/src/I18n/Languages.php
+# You may run the following command to get the latest language codes:
+# `tmp=$(mktemp) && curl -fsSL 'https://raw.githubusercontent.com/php/web-php/master/src/I18n/Languages.php' -o "$tmp" && php -r 'require '"'"$tmp"'"'; echo implode(" ", array_keys(\phpweb\I18n\Languages::ACTIVE_ONLINE_LANGUAGES)).PHP_EOL;' && rm -f "$tmp"`
+LANG_CODES=(en de es fr it ja pt_BR ru tr uk zh)
 LANG_NAMES=(
-    "Português Brasil" "简体中文" "English" "Français" "Deutsch" "Italiano"
-    "日本語" "Polski" "Română" "Русский" "Español" "Türkçe" "Українська"
+    "English" "Deutsch" "Español" "Français" "Italiano" "日本語"
+    "Português Brasil" "Русский" "Türkçe" "Українська" "简体中文"
 )
 
 # The root directory of this script
@@ -35,14 +34,14 @@ trap 'rm -rf "$BUILD"' EXIT
 ### Flags and variables for options
 # The languages to generate
 LANGS=()
-# The output directory for generated docsets or php.net mirror
-OUTPUT="$ROOT/output"
 # Whether to generate a php.net mirror instead of docsets
 mirror=false
 # Whether to exclude user-contributed notes from the manual
 no_usernotes=false
 # Whether to skip fetching or updating PHP doc repositories
 skip_fetch=false
+# The output directory for generated docsets or php.net mirror
+OUTPUT="$ROOT/output"
 
 # Print script usage information
 usage() {
@@ -58,12 +57,45 @@ Arguments:
                 (default: 'en')
 
 Options:
-  --output <dir>    Specify the output directory (default: '$OUTPUT').
   --mirror          Generate a php.net mirror instead of docsets.
   --no-usernotes    Exclude user-contributed notes from the manual.
   --skip-fetch      Skip fetching or updating PHP doc repositories.
+  --output <dir>    Specify the output directory (default: '$OUTPUT').
   help, -h, --help  Display this help message.
 EOF
+}
+
+# Get the language name from the language code: $code
+get_lang_name() {
+    local code="$1"
+    for i in "${!LANG_CODES[@]}"; do
+        if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
+            echo "${LANG_NAMES[$i]}"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# Normalize the language code to a standard format (e.g., "en_us" to "en_US")
+normalize_lang_code() {
+    local code="$1"
+    local lang region
+
+    if [[ "$code" == *_* ]]; then
+        lang="${code%%_*}"
+        region="${code##*_}"
+        echo "$(tr '[:upper:]' '[:lower:]' <<<"$lang")_$(tr '[:lower:]' '[:upper:]' <<<"$region")"
+    else
+        echo "$(tr '[:upper:]' '[:lower:]' <<<"$code")"
+    fi
+}
+
+escape_sql_string() {
+    local s="$1"
+    s="${s//\'/''}"
+    s="${s//\\/\\\\}"
+    echo "$s"
 }
 
 # Clone or pull a git repository: $repo [$path]
@@ -131,25 +163,6 @@ render_docbook() {
         --output "$(dirname "$dest")" --package PHP --format "$format" "$@"
 
     git -C "$PHPDOC/phd" reset --hard -q
-}
-
-# Get the language name from the language code: $code
-get_lang_name() {
-    local code="$1"
-    for i in "${!LANG_CODES[@]}"; do
-        if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
-            echo "${LANG_NAMES[$i]}"
-            return 0
-        fi
-    done
-    return 1
-}
-
-escape_sql_string() {
-    local s="$1"
-    s="${s//\'/''}"
-    s="${s//\\/\\\\}"
-    echo "$s"
 }
 
 # Create a Dash docset from the rendered HTML files: $source $lang
@@ -318,14 +331,6 @@ main() {
 while [[ $# -gt 0 ]]; do
     arg="$1"
     case "$arg" in
-        --output)
-            if [[ $# -lt 2 ]]; then
-                echo -e "${RED}Error: --output requires a directory argument.${NC}" >&2
-                exit 1
-            fi
-            OUTPUT="$2"
-            shift 2
-            ;;
         --mirror)
             mirror=true
             shift
@@ -338,16 +343,24 @@ while [[ $# -gt 0 ]]; do
             skip_fetch=true
             shift
             ;;
+        --output)
+            if [[ $# -lt 2 ]]; then
+                echo -e "${RED}Error: --output requires a directory argument.${NC}" >&2
+                exit 1
+            fi
+            OUTPUT="$2"
+            shift 2
+            ;;
         help|-h|--help)
             usage
             exit 0
             ;;
         *)
             # Check if argument is a supported language code
-            lower_arg=$(echo "$arg" | tr '[:upper:]' '[:lower:]')
-            if [[ " ${LANG_CODES[*]} " =~ " ${lower_arg} " ]]; then
-                if [[ ${#LANGS[@]} -eq 0 ]] || [[ ! " ${LANGS[*]} " =~ " ${lower_arg} " ]]; then
-                    LANGS+=("$lower_arg")
+            code=$(normalize_lang_code "$arg")
+            if [[ " ${LANG_CODES[*]} " =~ " ${code} " ]]; then
+                if [[ ${#LANGS[@]} -eq 0 ]] || [[ ! " ${LANGS[*]} " =~ " ${code} " ]]; then
+                    LANGS+=("$code")
                 fi
                 shift
             else
@@ -361,7 +374,7 @@ done
 
 # Default to 'en' if no languages are specified
 if [[ ${#LANGS[@]} -eq 0 ]]; then
-    LANGS=("en")
+    LANGS=(en)
 fi
 
 main
