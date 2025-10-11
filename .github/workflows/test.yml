@@ -40,21 +40,21 @@ jobs:
 
       - name: Test default generation
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh
           test -d output/PHP_en.docset
           test -f output/PHP_en.tgz
 
       - name: Test other languages
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh zh
           test -d output/PHP_zh.docset
           test -f output/PHP_zh.tgz
 
       - name: Test multiple languages
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh en zh ja
           test -d output/PHP_en.docset
           test -f output/PHP_en.tgz
@@ -65,16 +65,16 @@ jobs:
 
       - name: Test --mirror option
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh --mirror
           test -d output/php.net
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh --mirror en zh ja
           test -d output/php.net
 
       - name: Test --output option
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh --output foo/bar en zh
           test -d foo/bar/PHP_en.docset
           test -f foo/bar/PHP_en.tgz
@@ -86,7 +86,7 @@ jobs:
 
       - name: Test --no-usernotes option
         run: |
-          git clean -dxf
+          git clean -dxf; rm -rf phpdoc
           ./generate.sh --no-usernotes zh
           test -d output/PHP_zh.docset
           test -f output/PHP_zh.tgz

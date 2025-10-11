@@ -343,7 +343,7 @@ while [[ $# -gt 0 ]]; do
             # Check if argument is a supported language code
             lower_arg=$(echo "$arg" | tr '[:upper:]' '[:lower:]')
             if [[ " ${LANG_CODES[*]} " =~ " ${lower_arg} " ]]; then
-                if [[ ${#LANGS[@]} -gt 0 ]] && [[ ! " ${LANGS[*]} " =~ " ${lower_arg} " ]]; then
+                if [[ ${#LANGS[@]} -eq 0 ]] || [[ ! " ${LANGS[*]} " =~ " ${lower_arg} " ]]; then
                     LANGS+=("$lower_arg")
                 fi
                 shift
