@@ -68,6 +68,31 @@ Options:
 EOF
 }
 
+msg_main() {
+    echo -e "${GREEN}➤ $*${NC}"
+}
+
+msg_sub() {
+    echo -e "  ⏳ $*"
+}
+
+msg_done() {
+    echo -e "${GREEN}✔ $*${NC}"
+}
+
+msg_error() {
+    echo -e "${RED}❌ $*${NC}" >&2
+}
+
+# Run a shell command with optional verbose output: $cmd
+run() {
+    if [[ "${verbose:-false}" == true ]]; then
+        "$@"
+    else
+        "$@" >/dev/null 2>&1
+    fi
+}
+
 # Get the language name from the language code: $code
 get_lang_name() {
     local code="$1"
@@ -99,31 +124,6 @@ escape_sql_string() {
     s="${s//\'/''}"
     s="${s//\\/\\\\}"
     echo "$s"
-}
-
-msg_main() {
-    echo -e "${GREEN}➤ $*${NC}"
-}
-
-msg_sub() {
-    echo -e "  ⏳ $*"
-}
-
-msg_done() {
-    echo -e "${GREEN}✔ $*${NC}"
-}
-
-msg_error() {
-    echo -e "${RED}❌ $*${NC}" >&2
-}
-
-# Run a shell command with optional verbose output: $cmd
-run() {
-    if [[ "${verbose:-false}" == true ]]; then
-        "$@"
-    else
-        "$@" >/dev/null 2>&1
-    fi
 }
 
 # Clone or update a git repository: $repo [$path]
