@@ -106,5 +106,5 @@ jobs:
         run: |
           rm -rf output
           for lang in en de es fr it ja pt_BR ru tr uk zh; do
-            ./generate.sh $lang --verbose || echo "⚠️ Failed to generate Dash docset for the language: $lang"
+            ./generate.sh $lang || echo "⚠️ Failed to generate Dash docset for the language: $lang"
           done
