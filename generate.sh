@@ -193,13 +193,31 @@ render_docbook() {
     git -C "$PHPDOC/phd" reset --hard -q
 }
 
-# Create a Dash docset from the rendered HTML files: $source $lang
+PHP_INDEX_DB_CONDITIONS=(
+    "Module: chunk = 1 AND element = 'book' AND filename LIKE 'book.%'"
+    "Interface: chunk = 1 AND element = 'phpdoc:classref' AND parent_id = 'reserved.interfaces'"
+    "Enum: chunk = 1 AND element = 'phpdoc:classref' AND filename LIKE 'enum.%'"
+    "Class: chunk = 1 AND element = 'phpdoc:classref' AND parent_id <> 'reserved.interfaces' AND filename NOT LIKE 'enum.%'"
+    "Exception: chunk = 1 AND element = 'phpdoc:exceptionref'"
+    "Keyword: chunk = 1 AND filename LIKE 'control-structures.%' AND filename <> 'control-structures.intro' AND filename <> 'control-structures.alternative-syntax'"
+    "Keyword: chunk = 1 AND parent_id = 'language.control-structures' AND filename LIKE 'function.%'"
+    "Method: element = 'refentry' AND sdesc LIKE '%::%'"
+    "Function: element = 'refentry' AND sdesc NOT LIKE '%::%'"
+    "Variable: chunk = 1 AND element = 'phpdoc:varentry'"
+    "Type: chunk = 1 AND parent_id = 'language.types' AND filename <> 'language.types.intro'"
+    "Guide: chunk = 1 AND filename = 'control-structures.alternative-syntax'"
+    "Guide: chunk = 1 AND filename = 'reserved.variables'"
+    "Guide: chunk = 1 AND filename LIKE 'language.%' AND parent_id <> 'language.types'"
+)
+
+# Create a Dash docset from the rendered HTML files: $source $lang $index_db
 # https://kapeli.com/docsets#dashDocset
 create_dash_docset() {
     msg_sub "Creating Dash docset..."
 
     local source="$1"
     local lang="$2"
+    local index_db="$3"
 
     local docset_basename="PHP_${lang}.docset"
     local docset="$BUILD/$docset_basename"
@@ -218,7 +236,7 @@ create_dash_docset() {
 <plist version="1.0">
 <dict>
 	<key>CFBundleIdentifier</key>
-	<string>php.${lang}</string>
+	<string>php_${lang}</string>
 	<key>CFBundleName</key>
 	<string>PHP (${lang_name})</string>
 	<key>DocSetPlatformFamily</key>
@@ -231,6 +249,8 @@ create_dash_docset() {
 </plist>
 EOF
 
+    msg_sub "Creating Dash docset index..."
+
     local sql="$docset.sql"
     cat <<EOF > "$sql"
 BEGIN TRANSACTION;
@@ -241,17 +261,34 @@ EOF
 
     echo 'BEGIN TRANSACTION;' >> "$sql"
 
-    local name="strlen"
-    local type="Function"
-    local path="function.strlen.html"
-    printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('%s', '%s', '%s');\n" \
-        "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
-        >> "$sql"
+    # local name="strlen"
+    # local type="Function"
+    # local path="function.strlen.html"
+    # printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('%s', '%s', '%s');\n" \
+    #     "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
+    #     >> "$sql"
+
+    for entry in "${PHP_INDEX_DB_CONDITIONS[@]}"; do
+        type="${entry%%:*}"
+        condition="${entry#*:}"
+        sqlite3 "$index_db" <<SQL | sed 's/^INSERT INTO searchIndex /INSERT OR IGNORE INTO searchIndex(name, type, path) /' >> "$sql"
+.mode insert searchIndex
+.headers off
+SELECT
+  CASE WHEN sdesc <> '' THEN sdesc ELSE ldesc END AS name,
+  '$type' AS type,
+  filename || '.html' AS path
+FROM ids
+WHERE $condition;
+SQL
+    done
 
     echo 'COMMIT;' >> "$sql"
 
-    sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql"
-    rm "$sql"
+    run sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql" || {
+        msg_error "Failed to create Dash docset index."
+        exit 3
+    }
 
     mkdir -p "$OUTPUT"
     local output_docset="$OUTPUT/$docset_basename"
@@ -294,7 +331,7 @@ generate_docset() {
     mv "$fonts" "$root/res/"
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
-    create_dash_docset "$root/res" "$lang"
+    create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"
     rm -rf "$root"
 }
 
@@ -329,9 +366,8 @@ generate_mirror() {
         msg_sub "Building PHP documentation for language: $lang ($(get_lang_name "$lang"))..."
         build_docbook "$lang"
         render_docbook php
-        local output="$BUILD/php-web"
         rm -rf "$root/manual/$lang"
-        mv "$output" "$root/manual/$lang"
+        mv "$BUILD/php-web" "$root/manual/$lang"
     done
 
     mkdir -p "$OUTPUT"
