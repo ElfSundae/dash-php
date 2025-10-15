@@ -194,20 +194,24 @@ render_docbook() {
 }
 
 PHP_INDEX_DB_CONDITIONS=(
-    "Module: chunk = 1 AND element = 'book' AND filename LIKE 'book.%'"
     "Interface: chunk = 1 AND element = 'phpdoc:classref' AND parent_id = 'reserved.interfaces'"
     "Enum: chunk = 1 AND element = 'phpdoc:classref' AND filename LIKE 'enum.%'"
     "Class: chunk = 1 AND element = 'phpdoc:classref' AND parent_id <> 'reserved.interfaces' AND filename NOT LIKE 'enum.%'"
     "Exception: chunk = 1 AND element = 'phpdoc:exceptionref'"
-    "Keyword: chunk = 1 AND filename LIKE 'control-structures.%' AND filename <> 'control-structures.intro' AND filename <> 'control-structures.alternative-syntax'"
-    "Keyword: chunk = 1 AND parent_id = 'language.control-structures' AND filename LIKE 'function.%'"
     "Method: element = 'refentry' AND sdesc LIKE '%::%'"
     "Function: element = 'refentry' AND sdesc NOT LIKE '%::%'"
+    "Keyword: chunk = 1 AND filename LIKE 'control-structures.%' AND filename NOT IN ('control-structures.intro', 'control-structures.alternative-syntax')"
+    "Keyword: chunk = 1 AND parent_id = 'language.control-structures' AND filename NOT LIKE 'control-structures.%'"
     "Variable: chunk = 1 AND element = 'phpdoc:varentry'"
     "Type: chunk = 1 AND parent_id = 'language.types' AND filename <> 'language.types.intro'"
+    "Operator: chunk = 1 AND parent_id = 'language.operators'"
+    "Extension: chunk = 1 AND element = 'set' AND parent_id <> ''"
+    "Extension: chunk = 1 AND element = 'book' AND parent_id <> 'index'"
+
+
     "Guide: chunk = 1 AND filename = 'control-structures.alternative-syntax'"
-    "Guide: chunk = 1 AND filename = 'reserved.variables'"
-    "Guide: chunk = 1 AND filename LIKE 'language.%' AND parent_id <> 'language.types'"
+    "Guide: chunk = 1 AND filename LIKE 'reserved.%' AND element <> 'phpdoc:varentry'"
+    "Guide: chunk = 1 AND filename LIKE 'language.%' AND element <> 'phpdoc:varentry' AND parent_id <> 'language.types' AND parent_id <> 'language.operators'"
 )
 
 # Create a Dash docset from the rendered HTML files: $source $lang $index_db
