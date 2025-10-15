@@ -207,8 +207,6 @@ PHP_INDEX_DB_CONDITIONS=(
     "Operator: chunk = 1 AND parent_id = 'language.operators'"
     "Extension: chunk = 1 AND element = 'set' AND parent_id <> ''"
     "Extension: chunk = 1 AND element = 'book' AND parent_id <> 'index'"
-
-
     "Guide: chunk = 1 AND filename = 'control-structures.alternative-syntax'"
     "Guide: chunk = 1 AND filename LIKE 'reserved.%' AND element <> 'phpdoc:varentry'"
     "Guide: chunk = 1 AND filename LIKE 'language.%' AND element <> 'phpdoc:varentry' AND parent_id <> 'language.types' AND parent_id <> 'language.operators'"
