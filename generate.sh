@@ -334,7 +334,6 @@ generate_docset() {
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
     create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"
-    rm -rf "$root"
 }
 
 # Generate Dash docsets for all specified languages
