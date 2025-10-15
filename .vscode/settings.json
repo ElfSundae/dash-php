@@ -1,0 +1,10 @@
+{
+    "search.exclude": {
+        "**/output": true,
+        "**/phpdoc": true
+    },
+    "files.watcherExclude": {
+        "**/output/**": true,
+        "**/phpdoc/**": true
+    }
+}
