@@ -251,7 +251,7 @@ create_dash_docset() {
 </plist>
 EOF
 
-    msg_sub "Creating Dash docset index..."
+    msg_sub "Creating Dash docset index database..."
 
     local sql="$docset.sql"
 
@@ -306,7 +306,7 @@ SQL
     echo 'COMMIT;' >> "$sql"
 
     run sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql" || {
-        msg_error "Failed to create Dash docset index."
+        msg_error "Failed to create Dash docset index database."
         exit 10
     }
 
