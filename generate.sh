@@ -273,7 +273,8 @@ EOF
     for entry in "${PHP_INDEX_DB_CONDITIONS[@]}"; do
         type="${entry%%:*}"
         condition="${entry#*:}"
-        sqlite3 "$index_db" <<SQL | sed 's/^INSERT INTO searchIndex /INSERT OR IGNORE INTO searchIndex(name, type, path) /' >> "$sql"
+        (
+            run sqlite3 "$index_db" <<SQL | sed 's/^INSERT INTO searchIndex /INSERT OR IGNORE INTO searchIndex(name, type, path) /' >> "$sql"
 .mode insert searchIndex
 .headers off
 SELECT
@@ -283,13 +284,17 @@ SELECT
 FROM ids
 WHERE $condition;
 SQL
+        ) || {
+            msg_error "Failed to query ids for type: $type"
+            exit 11
+        }
     done
 
     echo 'COMMIT;' >> "$sql"
 
     run sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql" || {
         msg_error "Failed to create Dash docset index."
-        exit 3
+        exit 10
     }
 
     mkdir -p "$OUTPUT"
