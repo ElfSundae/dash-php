@@ -254,6 +254,7 @@ EOF
     msg_sub "Creating Dash docset index..."
 
     local sql="$docset.sql"
+
     cat <<EOF > "$sql"
 BEGIN TRANSACTION;
 CREATE TABLE searchIndex(id INTEGER PRIMARY KEY, name TEXT, type TEXT, path TEXT);
@@ -262,13 +263,6 @@ COMMIT;
 EOF
 
     echo 'BEGIN TRANSACTION;' >> "$sql"
-
-    # local name="strlen"
-    # local type="Function"
-    # local path="function.strlen.html"
-    # printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES ('%s', '%s', '%s');\n" \
-    #     "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
-    #     >> "$sql"
 
     for entry in "${PHP_INDEX_DB_CONDITIONS[@]}"; do
         type="${entry%%:*}"
@@ -289,6 +283,25 @@ SQL
             exit 11
         }
     done
+
+    type="Constant"
+    (
+        run sqlite3 -noheader -separator '|' "$index_db" \
+            "SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'constant.%' AND docbook_id NOT LIKE 'constant%.%.%'" | \
+            while IFS='|' read -r id filename; do
+                path="${filename}.html#${id}"
+                html_file="$docset/Contents/Resources/Documents/${filename}.html"
+                [[ -f "$html_file" ]] || continue
+                name=$(xmllint --html --xpath "(//a[@href='${path}']/text())[1]" "$html_file" 2>/dev/null || true)
+                [[ -n "$name" ]] || continue
+                printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES('%s', '%s', '%s');\n" \
+                    "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
+                    >> "$sql"
+            done
+    ) || {
+        msg_error "Failed to query ids for type: $type"
+        exit 12
+    }
 
     echo 'COMMIT;' >> "$sql"
 
