@@ -28,8 +28,7 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 PHPDOC="$ROOT/phpdoc"
 
 # The working build directory
-BUILD=$(mktemp -d)
-trap 'rm -rf "$BUILD"' EXIT
+BUILD=""
 
 ### Flags and variables for options
 # The languages to generate
@@ -44,6 +43,8 @@ SKIP_UPDATE=false
 OUTPUT="$ROOT/output"
 # Whether to display verbose output
 VERBOSE=false
+# Local dev mode
+DEV_MODE=false
 
 # Print script usage information
 usage() {
@@ -290,10 +291,23 @@ SQL
             "SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'constant.%' AND docbook_id NOT LIKE 'constant%.%.%'" | \
             while IFS='|' read -r id filename; do
                 path="${filename}.html#${id}"
+
                 html_file="$docset/Contents/Resources/Documents/${filename}.html"
-                [[ -f "$html_file" ]] || continue
+                if [[ ! -f "$html_file" ]]; then
+                    if [[ "$DEV_MODE" == true ]]; then
+                        echo -e "Constant ${GREEN}$id${NC} html file does not exist: ${GREEN}$html_file${NC}"
+                    fi
+                    continue
+                fi
+
                 name=$(xmllint --html --xpath "(//a[@href='${path}']/text())[1]" "$html_file" 2>/dev/null || true)
-                [[ -n "$name" ]] || continue
+                if [[ -z "$name" ]]; then
+                    if [[ "$DEV_MODE" == true ]]; then
+                        echo -e "Constant ${GREEN}$id${NC} name not found: ${GREEN}$html_file${NC}"
+                    fi
+                    continue
+                fi
+
                 printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES('%s', '%s', '%s');\n" \
                     "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
                     >> "$sql"
@@ -314,6 +328,11 @@ SQL
     local output_docset="$OUTPUT/$docset_basename"
     rm -rf "$output_docset"
     mv "$docset" "$output_docset"
+
+    if [[ "$DEV_MODE" == true ]]; then
+        sqlite3 --header -separator ':\t\t' "$output_docset/Contents/Resources/docSet.dsidx" \
+            "SELECT type, count(*) AS count FROM searchIndex GROUP BY type"
+    fi
 
     msg_done "Generated PHP Dash docset (${lang_name}) at: $output_docset"
 }
@@ -352,6 +371,7 @@ generate_docset() {
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
     create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"
+    rm -rf "$root"
 }
 
 # Generate Dash docsets for all specified languages
@@ -391,7 +411,7 @@ generate_mirror() {
 
     mkdir -p "$OUTPUT"
     local output_mirror="$OUTPUT/php.net"
-    rsync -aq --delete "$root/" "$output_mirror/"
+    rsync -aq --delete --remove-source-files "$root/" "$output_mirror/"
 
     msg_done "Generated php.net mirror at $output_mirror, you may run the web server via:
 (cd \"$output_mirror\" && php -S localhost:8080 .router.php)"
@@ -399,6 +419,14 @@ generate_mirror() {
 
 main() {
     mkdir -p "$PHPDOC"
+
+    if [[ "$DEV_MODE" == false ]]; then
+        BUILD=$(mktemp -d)
+        trap 'rm -rf "$BUILD"' EXIT
+    else
+        BUILD="$PHPDOC/build"
+        mkdir -p "$BUILD"
+    fi
 
     if [[ "$SKIP_UPDATE" == false ]]; then
         update_repos
@@ -437,6 +465,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --verbose)
             VERBOSE=true
+            shift
+            ;;
+        --dev)
+            DEV_MODE=true
             shift
             ;;
         help|-h|--help)
