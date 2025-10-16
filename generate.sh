@@ -371,7 +371,6 @@ generate_docset() {
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
     create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"
-    rm -rf "$root"
 }
 
 # Generate Dash docsets for all specified languages
@@ -411,7 +410,7 @@ generate_mirror() {
 
     mkdir -p "$OUTPUT"
     local output_mirror="$OUTPUT/php.net"
-    rsync -aq --delete --remove-source-files "$root/" "$output_mirror/"
+    rsync -aq --delete "$root/" "$output_mirror/"
 
     msg_done "Generated php.net mirror at $output_mirror, you may run the web server via:
 (cd \"$output_mirror\" && php -S localhost:8080 .router.php)"
