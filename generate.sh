@@ -15,7 +15,7 @@ fi
 
 # Supported languages: https://github.com/php/web-php/blob/master/src/I18n/Languages.php
 # You may run the following command to get the latest language codes:
-# `tmp=$(mktemp) && curl -fsSL 'https://raw.githubusercontent.com/php/web-php/master/src/I18n/Languages.php' -o "$tmp" && php -r 'require '"'"$tmp"'"'; echo implode(" ", array_keys(\phpweb\I18n\Languages::ACTIVE_ONLINE_LANGUAGES)).PHP_EOL;' && rm -f "$tmp"`
+# `tmp=$(mktemp) && curl -fsSL 'https://raw.githubusercontent.com/php/web-php/master/src/I18n/Languages.php' -o "$tmp" && php -r 'require '"'$tmp'"'; echo implode(" ", array_keys(\phpweb\I18n\Languages::ACTIVE_ONLINE_LANGUAGES)).PHP_EOL;' && rm -f "$tmp"`
 LANG_CODES=(en de es fr it ja pt_BR ru tr uk zh)
 LANG_NAMES=(
     "English" "Deutsch" "Español" "Français" "Italiano" "日本語"
