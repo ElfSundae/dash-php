@@ -35,15 +35,15 @@ trap 'rm -rf "$BUILD"' EXIT
 # The languages to generate
 LANGS=()
 # Whether to generate a php.net mirror instead of docsets
-mirror=false
+MIRROR=false
 # Whether to exclude user-contributed notes from the manual
-no_usernotes=false
+NO_USERNOTES=false
 # Whether to skip fetching or updating PHP doc repositories
-skip_update=false
+SKIP_UPDATE=false
 # The output directory for generated docsets or php.net mirror
 OUTPUT="$ROOT/output"
 # Whether to display verbose output
-verbose=false
+VERBOSE=false
 
 # Print script usage information
 usage() {
@@ -86,7 +86,7 @@ msg_error() {
 
 # Run a shell command with optional verbose output: $cmd
 run() {
-    if [[ "${verbose:-false}" == true ]]; then
+    if [[ "${VERBOSE:-false}" == true ]]; then
         "$@"
     else
         "$@" >/dev/null 2>&1
@@ -336,7 +336,7 @@ generate_docset() {
     find "$fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
 
     local format="enhancedchm"
-    if [[ "$no_usernotes" == true ]]; then
+    if [[ "$NO_USERNOTES" == true ]]; then
         format="chm"
     fi
 
@@ -400,14 +400,14 @@ generate_mirror() {
 main() {
     mkdir -p "$PHPDOC"
 
-    if [[ "$skip_update" == false ]]; then
+    if [[ "$SKIP_UPDATE" == false ]]; then
         update_repos
     fi
 
-    if [[ "$mirror" == false ]]; then
-        generate_docsets
-    else
+    if [[ "$MIRROR" == true ]]; then
         generate_mirror
+    else
+        generate_docsets
     fi
 }
 
@@ -416,15 +416,15 @@ while [[ $# -gt 0 ]]; do
     arg="$1"
     case "$arg" in
         --mirror)
-            mirror=true
+            MIRROR=true
             shift
             ;;
         --no-usernotes)
-            no_usernotes=true
+            NO_USERNOTES=true
             shift
             ;;
         --skip-update)
-            skip_update=true
+            SKIP_UPDATE=true
             shift
             ;;
         --output)
@@ -436,7 +436,7 @@ while [[ $# -gt 0 ]]; do
             shift 2
             ;;
         --verbose)
-            verbose=true
+            VERBOSE=true
             shift
             ;;
         help|-h|--help)
