@@ -208,7 +208,7 @@ index f172f26..fb9dd5e 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 0440afa..aeb8090 100644
+index 0440afa..4ac770e 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 @@ -16,14 +16,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
@@ -216,7 +216,7 @@ index 0440afa..aeb8090 100644
  
      public function header($id) {
 -        $title = Format::getLongDescription($id);
-+        $title = Format::getShortDescription($id);
++        $title = ($this->indexes[$id]['sdesc'] && $this->indexes[$id]['ldesc']) ? "{$this->indexes[$id]['sdesc']} — {$this->indexes[$id]['ldesc']}" : Format::getShortDescription($id);
 +        $onlinePage = 'https://www.php.net/manual/'.$this->config->language.'/'.$id.'.php';
          static $cssLinks = null;
          if ($cssLinks === null) {
