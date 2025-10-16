@@ -194,7 +194,7 @@ render_docbook() {
     git -C "$PHPDOC/phd" reset --hard -q
 }
 
-PHP_INDEX_DB_CONDITIONS=(
+PHD_INDEX_DB_CONDITIONS=(
     "Interface: chunk = 1 AND element = 'phpdoc:classref' AND parent_id = 'reserved.interfaces'"
     "Enum: chunk = 1 AND element = 'phpdoc:classref' AND filename LIKE 'enum.%'"
     "Class: chunk = 1 AND element = 'phpdoc:classref' AND parent_id <> 'reserved.interfaces' AND filename NOT LIKE 'enum.%'"
@@ -211,6 +211,11 @@ PHP_INDEX_DB_CONDITIONS=(
     "Guide: chunk = 1 AND filename = 'control-structures.alternative-syntax'"
     "Guide: chunk = 1 AND filename LIKE 'reserved.%' AND element <> 'phpdoc:varentry'"
     "Guide: chunk = 1 AND filename LIKE 'language.%' AND element <> 'phpdoc:varentry' AND parent_id <> 'language.types' AND parent_id <> 'language.operators'"
+)
+
+ANCHOR_INDEX_DB_CONDITIONS=(
+    "Constant: docbook_id LIKE 'constant.%' AND docbook_id NOT LIKE 'constant%.%.%'"
+    "Setting: docbook_id LIKE 'ini.%'"
 )
 
 # Create a Dash docset from the rendered HTML files: $source $lang $index_db
@@ -265,11 +270,12 @@ EOF
 
     echo 'BEGIN TRANSACTION;' >> "$sql"
 
-    for entry in "${PHP_INDEX_DB_CONDITIONS[@]}"; do
+    # Generating indexes from PhD index.sqlite
+    for entry in "${PHD_INDEX_DB_CONDITIONS[@]}"; do
         type="${entry%%:*}"
         condition="${entry#*:}"
         (
-            run sqlite3 "$index_db" <<SQL | sed 's/^INSERT INTO searchIndex /INSERT OR IGNORE INTO searchIndex(name, type, path) /' >> "$sql"
+            sqlite3 "$index_db" <<SQL | sed 's/^INSERT INTO searchIndex /INSERT OR IGNORE INTO searchIndex(name, type, path) /' >> "$sql"
 .mode insert searchIndex
 .headers off
 SELECT
@@ -280,46 +286,50 @@ FROM ids
 WHERE $condition;
 SQL
         ) || {
-            msg_error "Failed to query ids for type: $type"
+            msg_error "Failed to create indexes for type: $type"
             exit 11
         }
     done
 
-    type="Constant"
-    (
-        run sqlite3 -noheader -separator '|' "$index_db" \
-            "SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'constant.%' AND docbook_id NOT LIKE 'constant%.%.%'" | \
-            while IFS='|' read -r id filename; do
-                path="${filename}.html#${id}"
+    # Generating indexes for Constants/Settings from rendered files
+    for entry in "${ANCHOR_INDEX_DB_CONDITIONS[@]}"; do
+        type="${entry%%:*}"
+        condition="${entry#*:}"
+        (
+            sqlite3 -noheader -separator '|' "$index_db" \
+                "SELECT docbook_id, filename FROM ids WHERE $condition;" | \
+                while IFS='|' read -r id filename; do
+                    path="${filename}.html#${id}"
 
-                html_file="$docset/Contents/Resources/Documents/${filename}.html"
-                if [[ ! -f "$html_file" ]]; then
-                    if [[ "$DEV_MODE" == true ]]; then
-                        echo -e "Constant ${GREEN}$id${NC} html file does not exist: ${GREEN}$html_file${NC}"
+                    html_file="$docset/Contents/Resources/Documents/${filename}.html"
+                    if [[ ! -f "$html_file" ]]; then
+                        if [[ "$DEV_MODE" == true ]]; then
+                            echo -e "$type ${GREEN}$id${NC} html file does not exist: ${GREEN}$html_file${NC}"
+                        fi
+                        continue
                     fi
-                    continue
-                fi
 
-                name=$(xmllint --html --xpath "(//a[@href='${path}']/text())[1]" "$html_file" 2>/dev/null || true)
-                if [[ -z "$name" ]]; then
-                    if [[ "$DEV_MODE" == true ]]; then
-                        echo -e "Constant ${GREEN}$id${NC} name not found: ${GREEN}$html_file${NC}"
+                    name=$(xmllint --html --xpath "(//a[@href='${path}']/text())[1]" "$html_file" 2>/dev/null || true)
+                    if [[ -z "$name" ]]; then
+                        if [[ "$DEV_MODE" == true ]]; then
+                            echo -e "$type ${GREEN}$id${NC} name not found: ${GREEN}$html_file${NC}"
+                        fi
+                        continue
                     fi
-                    continue
-                fi
 
-                printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES('%s', '%s', '%s');\n" \
-                    "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
-                    >> "$sql"
-            done
-    ) || {
-        msg_error "Failed to query ids for type: $type"
-        exit 12
-    }
+                    printf "INSERT OR IGNORE INTO searchIndex(name, type, path) VALUES('%s', '%s', '%s');\n" \
+                        "$(escape_sql_string "$name")" "$(escape_sql_string "$type")" "$(escape_sql_string "$path")" \
+                        >> "$sql"
+                done
+        ) || {
+            msg_error "Failed to create indexes for type: $type"
+            exit 12
+        }
+    done
 
     echo 'COMMIT;' >> "$sql"
 
-    run sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql" || {
+    sqlite3 "$docset/Contents/Resources/docSet.dsidx" < "$sql" || {
         msg_error "Failed to create Dash docset index database."
         exit 10
     }
@@ -330,8 +340,8 @@ SQL
     mv "$docset" "$output_docset"
 
     if [[ "$DEV_MODE" == true ]]; then
-        sqlite3 -header -box "$output_docset/Contents/Resources/docSet.dsidx" \
-            "SELECT type, count(*) AS count FROM searchIndex GROUP BY type"
+        sqlite3 -box "$output_docset/Contents/Resources/docSet.dsidx" \
+            "SELECT type, count(*) AS count FROM searchIndex GROUP BY type;"
     fi
 
     msg_done "Generated PHP Dash docset (${lang_name}) at: $output_docset"
