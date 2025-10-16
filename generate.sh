@@ -330,7 +330,7 @@ SQL
     mv "$docset" "$output_docset"
 
     if [[ "$DEV_MODE" == true ]]; then
-        sqlite3 --header -separator ':\t\t' "$output_docset/Contents/Resources/docSet.dsidx" \
+        sqlite3 -header -box "$output_docset/Contents/Resources/docSet.dsidx" \
             "SELECT type, count(*) AS count FROM searchIndex GROUP BY type"
     fi
 
