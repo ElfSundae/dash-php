@@ -208,15 +208,17 @@ index f172f26..fb9dd5e 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 0440afa..4ac770e 100644
+index 0440afa..cc716b6 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-@@ -16,14 +16,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+@@ -16,14 +16,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
      }
  
      public function header($id) {
 -        $title = Format::getLongDescription($id);
-+        $title = ($this->indexes[$id]['sdesc'] && $this->indexes[$id]['ldesc']) ? "{$this->indexes[$id]['sdesc']} — {$this->indexes[$id]['ldesc']}" : Format::getShortDescription($id);
++        $sdesc = $this->indexes[$id]['sdesc'] ?? '';
++        $ldesc = $this->indexes[$id]['ldesc'] ?? '';
++        $title = ($sdesc && $ldesc && $sdesc !== $ldesc) ? "$sdesc — $ldesc" : Format::getShortDescription($id);
 +        $onlinePage = 'https://www.php.net/manual/'.$this->config->language.'/'.$id.'.php';
          static $cssLinks = null;
          if ($cssLinks === null) {
@@ -229,7 +231,7 @@ index 0440afa..4ac770e 100644
   <head>
    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
    <title>$title</title>
-@@ -46,14 +47,13 @@ HEADER;
+@@ -46,14 +49,13 @@ HEADER;
              );
              $nextLink = "<li style=\"float: right;\"><a href=\"{$next["href"]}\">{$next["desc"]} »</a></li>";
          }
@@ -247,7 +249,7 @@ index 0440afa..4ac770e 100644
          }
  
          $nav = <<<NAV
-@@ -67,7 +67,6 @@ HEADER;
+@@ -67,7 +69,6 @@ HEADER;
  </div>
  <div id="breadcrumbs" class="clearfix">
    <ul class="breadcrumbs-container">
