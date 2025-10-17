@@ -214,7 +214,7 @@ PHD_INDEX_DB_CONDITIONS=(
 )
 
 ANCHOR_INDEX_DB_CONDITIONS=(
-    "Constant: docbook_id LIKE 'constant.%' AND docbook_id NOT LIKE 'constant%.%.%'"
+    "Constant: docbook_id LIKE 'constant.%' OR docbook_id LIKE '%.constant.%' OR docbook_id LIKE 'constants.%' OR docbook_id LIKE '%.constants.%'"
     "Setting: docbook_id LIKE 'ini.%'"
 )
 
