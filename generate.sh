@@ -316,11 +316,11 @@ SQL
                     fi
 
                     if [[ "$type" == "Property" ]]; then
-                        name=$(xmllint --html --xpath "string(//*[@id='${id}']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
+                        name=$(xmllint --html --xpath "string(//*[@id='$id']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
                         [[ -n "$name" ]] || continue
                         name="${extra}::${name}"
                     else
-                        name=$(xmllint --html --xpath "string(//a[@href='${path}'][1])" "$html_file" 2>/dev/null || true)
+                        name=$(xmllint --html --xpath "string(//*[@id='$id']//a[@href='$path'][1])" "$html_file" 2>/dev/null || true)
                     fi
 
                     if [[ -z "$name" ]]; then
