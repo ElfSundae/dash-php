@@ -368,7 +368,7 @@ SQL
 
     if [[ "$DEV_MODE" == true ]]; then
         sqlite3 -box "$output_docset/Contents/Resources/docSet.dsidx" \
-            "SELECT type, count(*) AS count FROM searchIndex GROUP BY type;"
+            "SELECT type, count(*) AS count FROM searchIndex GROUP BY type UNION ALL SELECT '-TOTAL-', count(*) FROM searchIndex;"
     fi
 
     msg_done "Generated PHP Dash docset (${lang_name}) at: $output_docset"
