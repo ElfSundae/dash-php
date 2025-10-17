@@ -214,15 +214,19 @@ PHD_INDEX_DB_CONDITIONS=(
 )
 
 ANCHOR_INDEX_DB_QUERIES=(
-    "Constant: SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'constant.%' OR docbook_id LIKE '%.constant.%' OR docbook_id LIKE 'constants.%' OR docbook_id LIKE '%.constants.%'"
-    "Setting: SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'ini.%'"
+    "Constant: SELECT docbook_id, filename FROM ids
+                WHERE element IN ('row', 'varlistentry')
+                AND (docbook_id LIKE 'constant.%' OR docbook_id LIKE '%.constant.%'
+                    OR docbook_id LIKE 'constants.%' OR docbook_id LIKE '%.constants.%')"
+    "Setting: SELECT docbook_id, filename FROM ids
+                WHERE element = 'varlistentry' AND docbook_id LIKE 'ini.%'"
     "Property: SELECT t.docbook_id, t.filename, s.sdesc AS classname
                 FROM ids AS t
                 LEFT JOIN ids AS s
                     ON s.docbook_id = t.filename
                     AND s.filename = t.filename
                     AND s.sdesc <> ''
-                WHERE t.docbook_id LIKE '%.props.%' AND t.filename LIKE 'class.%'"
+                WHERE t.element = 'varlistentry' AND t.docbook_id LIKE '%.props.%' AND t.filename LIKE 'class.%'"
 )
 
 # Create a Dash docset from the rendered HTML files: $source $lang $index_db
@@ -298,7 +302,7 @@ SQL
         }
     done
 
-    # Generating indexes for Constants/Settings/Property from PhD index.sqlite and rendered files
+    # Generating indexes for Constant/Setting/Property from PhD index.sqlite and rendered files
     for entry in "${ANCHOR_INDEX_DB_QUERIES[@]}"; do
         type="${entry%%:*}"
         query="${entry#*:}"
@@ -315,15 +319,25 @@ SQL
                         continue
                     fi
 
-                    if [[ "$type" == "Property" ]]; then
-                        name=$(xmllint --html --xpath "string(//*[@id='$id']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
-                        [[ -n "$name" ]] || continue
-                        name="${extra}::${name}"
-                    else
-                        name=$(xmllint --html --xpath "string(//*[@id='$id']//a[@href='$path'][1])" "$html_file" 2>/dev/null || true)
-                    fi
+                    case "$type" in
+                        Constant)
+                            name=$(xmllint --html --xpath "string(//*[@id='$id']//code[1])" "$html_file" 2>/dev/null || true)
+                            ;;
+                        Setting)
+                            name=$(xmllint --html --xpath "string(//a[@href='$path'][1])" "$html_file" 2>/dev/null || true)
+                            if [[ -z "$name" ]]; then
+                                name=$(xmllint --html --xpath "string(//*[@id='$id']//code[1])" "$html_file" 2>/dev/null || true)
+                            fi
+                            ;;
+                        Property)
+                            name=$(xmllint --html --xpath "string(//*[@id='$id']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
+                            if [[ -n "$name" ]]; then
+                                name="${extra}::${name}"
+                            fi
+                            ;;
+                    esac
 
-                    if [[ -z "$name" ]]; then
+                    if [[ -z "${name:-}" ]]; then
                         if [[ "$DEV_MODE" == true ]]; then
                             echo -e "$type ${GREEN}$id${NC} name not found: ${GREEN}$html_file${NC}"
                         fi
