@@ -213,9 +213,16 @@ PHD_INDEX_DB_CONDITIONS=(
     "Guide: chunk = 1 AND filename LIKE 'language.%' AND element <> 'phpdoc:varentry' AND parent_id <> 'language.types' AND parent_id <> 'language.operators'"
 )
 
-ANCHOR_INDEX_DB_CONDITIONS=(
-    "Constant: docbook_id LIKE 'constant.%' OR docbook_id LIKE '%.constant.%' OR docbook_id LIKE 'constants.%' OR docbook_id LIKE '%.constants.%'"
-    "Setting: docbook_id LIKE 'ini.%'"
+ANCHOR_INDEX_DB_QUERIES=(
+    "Constant: SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'constant.%' OR docbook_id LIKE '%.constant.%' OR docbook_id LIKE 'constants.%' OR docbook_id LIKE '%.constants.%'"
+    "Setting: SELECT docbook_id, filename FROM ids WHERE docbook_id LIKE 'ini.%'"
+    "Property: SELECT t.docbook_id, t.filename, s.sdesc AS classname
+                FROM ids AS t
+                LEFT JOIN ids AS s
+                    ON s.docbook_id = t.filename
+                    AND s.filename = t.filename
+                    AND s.sdesc <> ''
+                WHERE t.docbook_id LIKE '%.props.%' AND t.filename LIKE 'class.%'"
 )
 
 # Create a Dash docset from the rendered HTML files: $source $lang $index_db
@@ -291,14 +298,13 @@ SQL
         }
     done
 
-    # Generating indexes for Constants/Settings from rendered files
-    for entry in "${ANCHOR_INDEX_DB_CONDITIONS[@]}"; do
+    # Generating indexes for Constants/Settings/Property from PhD index.sqlite and rendered files
+    for entry in "${ANCHOR_INDEX_DB_QUERIES[@]}"; do
         type="${entry%%:*}"
-        condition="${entry#*:}"
+        query="${entry#*:}"
         (
-            sqlite3 -noheader -separator '|' "$index_db" \
-                "SELECT docbook_id, filename FROM ids WHERE $condition;" | \
-                while IFS='|' read -r id filename; do
+            sqlite3 -noheader -separator $'\x1F' "$index_db" "$query;" | \
+                while IFS=$'\x1F' read -r id filename extra; do
                     path="${filename}.html#${id}"
 
                     html_file="$docset/Contents/Resources/Documents/${filename}.html"
@@ -309,7 +315,14 @@ SQL
                         continue
                     fi
 
-                    name=$(xmllint --html --xpath "(//a[@href='${path}']/text())[1]" "$html_file" 2>/dev/null || true)
+                    if [[ "$type" == "Property" ]]; then
+                        name=$(xmllint --html --xpath "string(//*[@id='${id}']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
+                        [[ -n "$name" ]] || continue
+                        name="${extra}::${name}"
+                    else
+                        name=$(xmllint --html --xpath "string(//a[@href='${path}'][1])" "$html_file" 2>/dev/null || true)
+                    fi
+
                     if [[ -z "$name" ]]; then
                         if [[ "$DEV_MODE" == true ]]; then
                             echo -e "$type ${GREEN}$id${NC} name not found: ${GREEN}$html_file${NC}"
