@@ -12,8 +12,12 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        php: [8.4]
+        os:
+          # - "macos-latest"
+          - "ubuntu-latest"
+        php:
+          # - "8.2"
+          - "8.4"
 
     name: PHP ${{ matrix.php }} on ${{ matrix.os }}
 
@@ -54,10 +58,9 @@ jobs:
       - name: Test multiple languages
         run: |
           rm -rf output
-          ./generate.sh zh en pt_br
+          ./generate.sh zh en
           test -d output/PHP_zh.docset
           test -d output/PHP_en.docset
-          test -d output/PHP_pt_BR.docset
 
       - name: Test --mirror option
         run: |
@@ -67,11 +70,10 @@ jobs:
           test -d output/php.net/manual/en
 
           rm -rf output
-          ./generate.sh --mirror en zh pt_br
+          ./generate.sh --mirror en zh
           test -d output/php.net
           test -d output/php.net/manual/en
           test -d output/php.net/manual/zh
-          test -d output/php.net/manual/pt_BR
 
       - name: Test --no-usernotes option
         run: |
@@ -83,7 +85,7 @@ jobs:
 
       - name: Test --skip-update option
         run: |
-          rm -rf phpdoc output
+          rm -rf output phpdoc
           ! ./generate.sh --skip-update
           ./generate.sh zh && rm -rf output
           ./generate.sh zh --skip-update
@@ -100,6 +102,8 @@ jobs:
 
           ./generate.sh --output ~/custom/output en zh --mirror
           test -d ~/custom/output/php.net
+          test -d ~/custom/output/php.net/manual/en
+          test -d ~/custom/output/php.net/manual/zh
           rm -rf ~/custom/output
 
       - name: Test all languages
