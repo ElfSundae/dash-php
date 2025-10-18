@@ -82,7 +82,10 @@ Exclude user-contributed notes:
 
 - macOS / Linux
 - PHP (>= 8.2 recommended)
-- git, wget, sqlite3, xmllint
+- `git`
+- `sqlite3`
+- `xmllint`
+- `wget` — required only for generating a php.net mirror
 
 ## License
 

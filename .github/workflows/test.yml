@@ -32,6 +32,8 @@ jobs:
           php -v
           pear version
           sqlite3 --version
+          xmllint -version
+          wget --version
 
       - name: Checkout repository
         uses: actions/checkout@v5
