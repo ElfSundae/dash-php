@@ -248,7 +248,7 @@ create_dash_docset() {
     cp "$ROOT/assets/icon.png" "$docset/"
     cp "$ROOT/assets/icon@2x.png" "$docset/"
 
-    local lang_name=$(get_lang_name "$lang")
+    local lang_name; lang_name=$(get_lang_name "$lang")
     cat <<EOF > "$docset/Contents/Info.plist"
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
