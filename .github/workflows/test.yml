@@ -31,8 +31,8 @@ jobs:
         run: |
           php -v
           pear version
-          sqlite3 --version
-          xmllint -version
+          sqlite3 -version
+          xmllint --version
           wget --version
 
       - name: Checkout repository
