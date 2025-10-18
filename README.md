@@ -5,11 +5,12 @@ Generate [Dash](https://kapeli.com/dash) docsets for the official [PHP Manual](h
 ## Features
 
 - **Multi-language support** — build docsets for all active PHP documentation translations.
-- **Optional exclusion of user-contributed notes** for cleaner reference sets.
 - **Comprehensive index coverage**, including:
   - Classes, Interfaces, Enums, Exceptions
   - Methods, Functions, Keywords, Variables, Types, Operators
-  - Extensions, Guides, Constants, Settings, Properties
+  - Extensions, Guides
+  - Constants, Settings, Properties
+- **Optional exclusion of user-contributed notes** for cleaner reference sets.
 - **Automatic repository updates** from official PHP sources.
 - **Cross-platform support** (macOS and Linux).
 - **Customizable output directory** and **verbose mode** for debugging.
