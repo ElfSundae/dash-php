@@ -187,7 +187,7 @@ fi
 (
     cd "$fork_path"
     git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" 2>/dev/null || true
-    git fetch upstream master
+    git fetch --all
     git checkout master
     git reset --hard upstream/master
     git push origin master --force
