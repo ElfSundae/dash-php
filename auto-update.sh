@@ -172,9 +172,6 @@ msg_main "Archiving ${docset_filename}..."
 }
 msg_sub "Archived $docset_filename to $docset_archive"
 
-msg_main "Syncing $FORK_REPO from $UPSTREAM_REPO..."
-gh repo sync "$FORK_REPO" --branch master --force
-
 msg_main "Preparing the fork repository..."
 if [[ ! -d "$fork_path" ]]; then
     git clone "https://github.com/${FORK_REPO}.git" "$fork_path"
@@ -183,13 +180,18 @@ else
         cd "$fork_path"
         git reset --hard
         git clean -dxfq
-
-        git switch master
-        git fetch --prune origin
-        git reset --hard origin/master
-        git clean -dxfq
     )
 fi
+
+# Sync fork, checkout master branch
+(
+    cd "$fork_path"
+    git remote add upstream "https://github.com/${UPSTREAM_REPO}.git" 2>/dev/null || true
+    git fetch upstream master
+    git checkout master
+    git reset --hard upstream/master
+    git push origin master --force
+)
 
 if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
     (
@@ -296,5 +298,5 @@ msg_main "Updating the docset in the fork repository..."
     else
         git commit -m "Update $docset_bundle_name to $version"
     fi
-    # git push -u origin "$branch"
+    git push -u origin "$branch"
 )
