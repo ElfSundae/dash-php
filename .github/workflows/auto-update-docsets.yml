@@ -14,16 +14,16 @@ jobs:
       matrix:
         lang:
           - "en"
-          - "de"
-          - "es"
-          - "fr"
-          - "it"
-          - "ja"
-          - "pt_BR"
-          - "ru"
-          - "tr"
-          - "uk"
-          - "zh"
+          # - "de"
+          # - "es"
+          # - "fr"
+          # - "it"
+          # - "ja"
+          # - "pt_BR"
+          # - "ru"
+          # - "tr"
+          # - "uk"
+          # - "zh"
 
     steps:
       - name: Install tools

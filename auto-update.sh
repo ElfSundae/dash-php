@@ -1,0 +1,277 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
+UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
+
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+OUTPUT="$ROOT/output"
+
+# Define colors for output messages
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+NC="\033[0m" # No Color
+
+msg_main() {
+    echo -e "${GREEN}[+] $*${NC}"
+}
+
+msg_sub() {
+    echo -e "    $*"
+}
+
+msg_error() {
+    echo -e "${RED}[!] $*${NC}" >&2
+}
+
+require() {
+    local cmd
+    for cmd in "$@"; do
+        command -v "$cmd" >/dev/null 2>&1 || { msg_error "Missing command: $cmd"; exit 1; }
+    done
+}
+
+# Obtain the version of the Dash docset: $docset_path
+docset_version() {
+    local docset="$1"
+
+    local pubdate; pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
+        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs)
+    [[ -n "$pubdate" ]] || { echo ""; return 0; }
+
+    local indexes; indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
+        'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null)
+    [[ -n "$indexes" ]] || { echo ""; return 0; }
+
+    local hash; hash=$(
+        cd "$docset" 2>/dev/null || { echo ""; return 0; }
+        find . -type f \
+            -not -name '.DS_Store' \
+            -not -name '*.dsidx' \
+            -print0 | sort -z | xargs -0 md5sum | md5sum | cut -c1-8
+    )
+    [[ -n "$hash" ]] || { echo ""; return 0; }
+
+    echo "/${pubdate}_${indexes}_${hash}"
+}
+
+# Fetch the latest version of the Dash docset: $docset_name/$docset_filename/$docset_path
+# Return non-zero exit code if request failed, empty string if not found, otherwise the version.
+fetch_latest_docset_version() {
+    local name; name=$(basename "$1" .docset)
+    local url="https://raw.githubusercontent.com/${UPSTREAM_REPO}/HEAD/docsets/${name}/docset.json"
+
+    local exit_code=0
+    local response; response=$(curl -fsL -w "\n%{http_code}" "$url" 2>/dev/null) || exit_code=$?
+    local http_code; http_code=$(echo "$response" | tail -n1)
+
+    if [[ $http_code -eq 404 ]]; then
+        # the docset does not exist upstream
+        echo ""
+        return 0
+    fi
+
+    if [[ $exit_code -ne 0 || $http_code -ne 200 ]]; then
+        # request failed
+        return 1
+    fi
+
+    local version; version=$( (echo "$response" | sed '$d' | jq -r '.version') 2>/dev/null )
+
+    if [[ -z "$version" || "$version" == "null" ]]; then
+        # invalid docset.json
+        return 1
+    fi
+
+    echo "$version"
+}
+
+require xmllint sqlite3 curl jq tar git gh
+
+if [[ $# -lt 1 ]]; then
+    msg_error "Usage: $0 <lang> [options...]"
+    exit 1
+fi
+
+lang="$1"; shift
+
+docset_name="PHP_${lang}"
+docset_filename="${docset_name}.docset"
+docset_archive="${docset_name}.tgz"
+
+fork_owner="${FORK_REPO%%/*}"
+fork_path="$OUTPUT/${FORK_REPO##*/}"
+branch="auto-update-php-${lang}"
+
+msg_main "Auto updating ${docset_filename}..."
+
+# Generate the Dash docset
+"$ROOT/generate.sh" "$lang" "$@" || {
+    msg_error "Failed to generate Dash docset for language: $lang"
+    exit 2
+}
+
+docset_bundle_name=$(xmllint \
+    --xpath 'string(/plist/dict/key[.="CFBundleName"]/following-sibling::string[1])' \
+    "$OUTPUT/$docset_filename/Contents/Info.plist" 2>/dev/null) || {
+    msg_error "Failed to obtain docset bundle name."
+    exit 3
+}
+msg_main "Docset bundle name: $docset_bundle_name"
+
+localized_manual_title=$(xmllint --html --xpath 'string(//title[1])' \
+    "$OUTPUT/$docset_filename/Contents/Resources/Documents/index.html" 2>/dev/null) || {
+    msg_error "Failed to obtain localized manual title."
+    exit 3
+}
+msg_main "Localized manual title: $localized_manual_title"
+
+msg_main "Obtaining the docset version..."
+version=$(docset_version "$OUTPUT/$docset_filename")
+if [[ -z "$version" ]]; then
+    msg_error "Failed to obtain the docset version."
+    exit 3
+fi
+msg_sub "$docset_filename version: $version"
+
+msg_main "Fetching the latest version..."
+latest_version=$(fetch_latest_docset_version "$docset_name") || {
+    msg_error "Failed to fetch the latest version."
+    exit 4
+}
+msg_sub "$docset_filename latest version: ${latest_version:-none}"
+
+# Compare versions to determine if an update is necessary
+if [[ "${version#*_}" == "${latest_version#*_}" ]]; then
+    msg_main "$docset_filename is already up-to-date, skipping update."
+    exit 0
+fi
+
+msg_main "Archiving ${docset_filename}..."
+(
+    cd "$OUTPUT"
+    rm -rf "$docset_archive"
+    tar --exclude='.DS_Store' --exclude='optimizedIndex.dsidx' -czf "$docset_archive" "$docset_filename"
+) || {
+    msg_error "Failed to archive $docset_filename"
+    exit 5
+}
+msg_sub "Archived $docset_filename to $docset_archive"
+
+msg_main "Syncing $FORK_REPO from $UPSTREAM_REPO..."
+gh repo sync "$FORK_REPO" --branch master --force
+
+msg_main "Preparing the fork repository..."
+if [[ ! -d "$fork_path" ]]; then
+    git clone "https://github.com/${FORK_REPO}.git" "$fork_path"
+else
+    (
+        cd "$fork_path"
+        git reset --hard
+        git clean -dxfq
+
+        git switch master
+        git fetch --prune origin
+        git reset --hard origin/master
+        git clean -dxfq
+    )
+fi
+
+if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+    (
+        cd "$fork_path"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+    )
+fi
+
+msg_main "Checking for existing pull requests..."
+existing_pr_number=$(gh pr list \
+    --repo "$UPSTREAM_REPO" \
+    --author "$fork_owner" \
+    --head "$branch" \
+    --state open \
+    --json number \
+    --jq '.[0].number' 2>/dev/null
+) || {
+    msg_error "Failed to check existing pull requests."
+    exit 6
+}
+msg_sub "Existing PR number: ${existing_pr_number:-none}"
+
+if [[ -z "$existing_pr_number" ]]; then
+    msg_main "Cleaning up old branch if exists..."
+    (
+        cd "$fork_path"
+        git branch -D "$branch" 2>/dev/null || true
+
+        exit_code=0
+        git push origin --delete "$branch" 2>/dev/null || exit_code=$?
+
+        # exit_code 0: branch deleted; 1: branch does not exist
+        if [[ $exit_code -eq 0 || $exit_code -eq 1 ]]; then
+            exit 0
+        fi
+
+        # Network or authentication error while deleting branch
+        exit $exit_code
+    ) || {
+        msg_error "Failed to clean up old branch, maybe due to network or authentication error."
+        exit 7
+    }
+fi
+
+msg_main "Checking out branch '$branch'..."
+(
+    cd "$fork_path"
+    git checkout "$branch" 2>/dev/null || git checkout -b "$branch"
+)
+
+if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
+    msg_main "Reading existing docset.json version in the fork repository..."
+
+    exist_version=$(jq -r '.version' "$fork_path/docsets/$docset_name/docset.json" 2>/dev/null) || {
+        msg_error "Failed to read existing docset.json version."
+        exit 7
+    }
+
+    if [[ "${version#*_}" == "${exist_version#*_}" ]]; then
+        msg_main "$docset_filename is already up-to-date in the fork repository, skipping update."
+        exit 0
+    fi
+fi
+
+msg_main "Updating the docset in the fork repository..."
+(
+    cd "$fork_path"
+
+    root="docsets/$docset_name"
+    mkdir -p "$root"
+
+    cp -f "$OUTPUT/$docset_archive" "$root/"
+    cp -f "$OUTPUT/$docset_filename/icon.png" "$root/"
+    cp -f "$OUTPUT/$docset_filename/icon@2x.png" "$root/"
+    cp -f "$ROOT/assets/Dash-User-Contributions/README.md" "$root/"
+
+    jq -n --arg name "$docset_bundle_name" \
+        --arg version "$version" \
+        --arg archive "$docset_archive" \
+        '{
+            "name": $name,
+            "version": $version,
+            "archive": $archive,
+            "author": {
+                "name": "Elf Sundae",
+                "link": "https://github.com/ElfSundae"
+            },
+            "aliases": ["PHP", "PHP Manual", "PHP Documentation", "'"$localized_manual_title"'"]
+         }' > "$root/docset.json"
+
+    git add -A
+    if [[ -z "$latest_version" ]]; then
+        git commit -m "Add new docset: $docset_bundle_name ($version)"
+    else
+        git commit -m "Update $docset_bundle_name to $version"
+    fi
+    # git push -u origin "$branch"
+)
