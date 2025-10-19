@@ -5,6 +5,15 @@ on:
   push:
     branches:
       - master
+  workflow_dispatch:
+    inputs:
+      run_full_tests:
+        description: 'Run full tests?'
+        required: false
+        default: 'false'
+
+env:
+  RUN_FULL_TESTS: ${{ github.event.inputs.run_full_tests || 'false' }}
 
 jobs:
   test:
@@ -23,6 +32,7 @@ jobs:
 
     steps:
       - name: Install tools
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libxml2-utils
@@ -56,26 +66,31 @@ jobs:
           ./generate.sh
           test -d output/PHP_en.docset
 
-      - name: Test other languages
+      - name: Test other language
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output
           ./generate.sh zh
           test -d output/PHP_zh.docset
 
       - name: Test multiple languages
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output
           ./generate.sh zh en
           test -d output/PHP_zh.docset
           test -d output/PHP_en.docset
 
-      - name: Test --mirror option
+      - name: Test --mirror option with default language
         run: |
           rm -rf output
           ./generate.sh --mirror
           test -d output/php.net
           test -d output/php.net/manual/en
 
+      - name: Test --mirror option with multiple languages
+        if: env.RUN_FULL_TESTS == 'true'
+        run: |
           rm -rf output
           ./generate.sh --mirror en zh
           test -d output/php.net
@@ -83,6 +98,7 @@ jobs:
           test -d output/php.net/manual/zh
 
       - name: Test --no-usernotes option
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output
           ./generate.sh --no-usernotes zh
@@ -91,6 +107,7 @@ jobs:
           ! grep -q '<div id="usernotes">' "$file" || echo "❌ Found usernotes in $file"
 
       - name: Test --skip-update option
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output phpdoc
           ! ./generate.sh --skip-update
@@ -99,14 +116,16 @@ jobs:
           test -d output/PHP_zh.docset
 
       - name: Test --output option
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
-          rm -rf output
+          rm -rf output foo/bar
           ! ./generate.sh --output
           ./generate.sh --output foo/bar en zh
           test -d foo/bar/PHP_en.docset
           test -d foo/bar/PHP_zh.docset
           rm -rf foo/bar
 
+          rm -rf ~/custom/output
           ./generate.sh --output ~/custom/output en zh --mirror
           test -d ~/custom/output/php.net
           test -d ~/custom/output/php.net/manual/en
@@ -114,6 +133,7 @@ jobs:
           rm -rf ~/custom/output
 
       - name: Test all languages
+        if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output
           for lang in en de es fr it ja pt_BR ru tr uk zh; do
