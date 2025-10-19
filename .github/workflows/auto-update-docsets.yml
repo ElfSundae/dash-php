@@ -42,5 +42,5 @@ jobs:
       - name: Auto update docset (${{ matrix.lang }})
         run: ./auto-update.sh ${{ matrix.lang }}
         env:
-          FORK_REPO: ${GITHUB_REPOSITORY_OWNER}/Dash-User-Contributions
+          FORK_REPO: ${{ github.repository_owner }}/Dash-User-Contributions
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
