@@ -1,0 +1,46 @@
+name: Auto Update PHP Dash Docsets
+
+on:
+  # schedule:
+  #   - cron: "0 0 */2 * *"
+  workflow_dispatch:
+
+jobs:
+  update-docset:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        lang:
+          - "en"
+          - "de"
+          - "es"
+          - "fr"
+          - "it"
+          - "ja"
+          - "pt_BR"
+          - "ru"
+          - "tr"
+          - "uk"
+          - "zh"
+
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils jq tar
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Auto update docset (${{ matrix.lang }})
+        run: ./auto-update.sh ${{ matrix.lang }}
+        env:
+          FORK_REPO: ${GITHUB_REPOSITORY_OWNER}/Dash-User-Contributions
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
