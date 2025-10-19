@@ -1,5 +1,4 @@
-PHP Docset
-=======================
+# PHP Docset
 
 This is a localized PHP documentation docset generated from the official PHP manual. It includes user-contributed notes and a complete index of all functions, classes, constants, and language constructs.
 
