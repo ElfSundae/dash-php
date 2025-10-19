@@ -31,6 +31,20 @@ require() {
     done
 }
 
+# Normalize the language code to a standard format (e.g., "en_us" to "en_US")
+normalize_lang_code() {
+    local code="$1"
+    local lang region
+
+    if [[ "$code" == *_* ]]; then
+        lang="${code%%_*}"
+        region="${code##*_}"
+        echo "$(tr '[:upper:]' '[:lower:]' <<<"$lang")_$(tr '[:lower:]' '[:upper:]' <<<"$region")"
+    else
+        echo "$(tr '[:upper:]' '[:lower:]' <<<"$code")"
+    fi
+}
+
 # Obtain the version of the Dash docset: $docset_path
 docset_version() {
     local docset="$1"
@@ -48,7 +62,7 @@ docset_version() {
         find . -type f \
             -not -name '.DS_Store' \
             -not -name '*.dsidx' \
-            -print0 | sort -z | xargs -0 md5sum | md5sum | cut -c1-8
+            -print0 | sort -z | xargs -0 md5sum | md5sum | cut -c1-6
     )
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
@@ -93,7 +107,7 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 
-lang="$1"; shift
+lang=$(normalize_lang_code "$1"); shift
 
 docset_name="PHP_${lang}"
 docset_filename="${docset_name}.docset"
@@ -253,7 +267,8 @@ msg_main "Updating the docset in the fork repository..."
     cp -f "$OUTPUT/$docset_filename/icon@2x.png" "$root/"
     cp -f "$ROOT/assets/Dash-User-Contributions/README.md" "$root/"
 
-    jq -n --arg name "$docset_bundle_name" \
+    jq --indent 4 -n \
+        --arg name "$docset_bundle_name" \
         --arg version "$version" \
         --arg archive "$docset_archive" \
         '{
@@ -264,8 +279,16 @@ msg_main "Updating the docset in the fork repository..."
                 "name": "Elf Sundae",
                 "link": "https://github.com/ElfSundae"
             },
-            "aliases": ["PHP", "PHP Manual", "PHP Documentation", "'"$localized_manual_title"'"]
+            "aliases": ["PHP", "PHP Manual", "PHP Documentation"]
          }' > "$root/docset.json"
+
+    if [[ "$lang" != "en" ]]; then
+        jq --indent 4 --arg title "$localized_manual_title" \
+            '.aliases += [$title]' "$root/docset.json" \
+            > temp.json && mv temp.json "$root/docset.json"
+    fi
+
+    cat "$root/docset.json"
 
     git add -A
     if [[ -z "$latest_version" ]]; then
