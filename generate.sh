@@ -97,6 +97,7 @@ run() {
 # Get the language name from the language code: $code
 get_lang_name() {
     local code="$1"
+    local i
     for i in "${!LANG_CODES[@]}"; do
         if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
             echo "${LANG_NAMES[$i]}"
@@ -129,12 +130,11 @@ escape_sql_string() {
 
 # Clone or update a git repository: $repo [$path]
 clone_or_update() {
+    local repo="$1"
+    local path="${2:-$(basename "$repo" .git)}"
+
     (
         cd "$PHPDOC"
-
-        local repo="$1"
-        local path="${2:-$(basename "$repo" .git)}"
-
         if [ -d "$path" ]; then
             (
                 cd "$path"
@@ -157,6 +157,7 @@ update_repos() {
     clone_or_update "https://github.com/php/phd.git"
     clone_or_update "https://github.com/php/web-php.git"
 
+    local lang
     for lang in "${LANGS[@]}"; do
         if [[ "$lang" != "en" ]]; then
             clone_or_update "https://github.com/php/doc-${lang}.git" "$lang"
@@ -282,6 +283,7 @@ EOF
     echo 'BEGIN TRANSACTION;' >> "$sql"
 
     # Generating indexes from PhD index.sqlite
+    local entry type condition
     for entry in "${PHD_INDEX_DB_CONDITIONS[@]}"; do
         type="${entry%%:*}"
         condition="${entry#*:}"
@@ -303,6 +305,7 @@ SQL
     done
 
     # Generating indexes for Constant/Setting/Property from PhD index.sqlite and rendered files
+    local query
     for entry in "${ANCHOR_INDEX_DB_QUERIES[@]}"; do
         type="${entry%%:*}"
         query="${entry#*:}"
@@ -412,6 +415,7 @@ generate_docset() {
 
 # Generate Dash docsets for all specified languages
 generate_docsets() {
+    local lang
     for lang in "${LANGS[@]}"; do
         generate_docset "$lang"
     done
@@ -437,6 +441,7 @@ generate_mirror() {
         exit 4
     }
 
+    local lang
     for lang in "${LANGS[@]}"; do
         msg_sub "Building PHP documentation for language: $lang ($(get_lang_name "$lang"))..."
         build_docbook "$lang"
