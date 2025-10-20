@@ -25,6 +25,10 @@ jobs:
           # - "uk"
           # - "zh"
 
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
       - name: Install tools
         run: |
@@ -39,8 +43,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
+      - name: Setup GitHub authentication
+        run: gh auth setup-git
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure bot identity (global)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - name: Auto update docset (${{ matrix.lang }})
         run: ./auto-update.sh ${{ matrix.lang }}
         env:
           FORK_REPO: ${{ github.repository_owner }}/Dash-User-Contributions
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

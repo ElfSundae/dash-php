@@ -115,7 +115,7 @@ docset_archive="${docset_name}.tgz"
 
 fork_owner="${FORK_REPO%%/*}"
 fork_path="$OUTPUT/${FORK_REPO##*/}"
-branch="auto-update-php-${lang}"
+branch="auto-update-${docset_name}"
 
 msg_main "Auto updating ${docset_filename}..."
 
@@ -193,14 +193,6 @@ fi
     git push origin master --force
 )
 
-if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
-    (
-        cd "$fork_path"
-        git config user.name "github-actions[bot]"
-        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-    )
-fi
-
 msg_main "Checking for existing pull requests..."
 existing_pr_number=$(gh pr list \
     --repo "$UPSTREAM_REPO" \
@@ -248,7 +240,7 @@ if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
 
     exist_version=$(jq -r '.version' "$fork_path/docsets/$docset_name/docset.json" 2>/dev/null) || {
         msg_error "Failed to read existing docset.json version."
-        exit 7
+        exit 8
     }
 
     if [[ "${version#*_}" == "${exist_version#*_}" ]]; then
