@@ -238,7 +238,11 @@ fi
 msg_main "Checking out branch '$branch'..."
 (
     cd "$fork_path"
-    git checkout "$branch" 2>/dev/null || git checkout -b "$branch"
+    if git rev-parse --verify "origin/$branch" >/dev/null 2>&1; then
+        git checkout -B "$branch" "origin/$branch"
+    else
+        git checkout -b "$branch"
+    fi
 )
 
 if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
