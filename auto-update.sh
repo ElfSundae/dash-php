@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Automatically update the PHP docset to the Dash user contributed docsets repository.
+# This script is designed to be executed both locally and within a GitHub workflow.
+
 FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
 UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
 UPSTREAM_REPO="$FORK_REPO" # For testing purpose
@@ -213,6 +216,9 @@ existing_pr_url=$(gh pr list \
 }
 msg_sub "Existing pull request: ${existing_pr_url:-none}"
 
+# If no existing opened PR on this branch, clean up old branch if exists, to avoid conflicts.
+# If there is an existing opened PR, keep the branch as is to preserve history,
+# and new commits will be added to the existing branch, then the PR will be automatically updated.
 if [[ -z "$existing_pr_url" ]]; then
     msg_main "Cleaning up old branch if exists..."
     (
@@ -245,13 +251,14 @@ msg_main "Checking out branch '$branch'..."
     fi
 )
 
+# Compare existing docset.json version (PR in progress) to determine if an update is necessary.
 if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
     msg_main "Reading existing docset.json version in the fork repository..."
-
     exist_version=$(jq -r '.version' "$fork_path/docsets/$docset_name/docset.json" 2>/dev/null) || {
         msg_error "Failed to read existing docset.json version."
         exit 8
     }
+    msg_sub "Existing docset.json version: $exist_version"
 
     if [[ "${version#*_}" == "${exist_version#*_}" ]]; then
         msg_main "$docset_filename is already up-to-date in the fork repository, skipping update."
