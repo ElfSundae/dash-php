@@ -3,6 +3,7 @@ set -euo pipefail
 
 FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
 UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
+UPSTREAM_REPO="$FORK_REPO" # For testing purpose
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT="$ROOT/output"
@@ -198,20 +199,21 @@ fi
 )
 
 msg_main "Checking for existing pull requests..."
-existing_pr_number=$(gh pr list \
+existing_pr_url=$(gh pr list \
     --repo "$UPSTREAM_REPO" \
+    --base master \
     --author "$fork_owner" \
     --head "$branch" \
     --state open \
-    --json number \
-    --jq '.[0].number' 2>/dev/null
+    --json url \
+    --jq '.[0].url' 2>/dev/null
 ) || {
     msg_error "Failed to check existing pull requests."
     exit 6
 }
-msg_sub "Existing PR number: ${existing_pr_number:-none}"
+msg_sub "Existing pull request: ${existing_pr_url:-none}"
 
-if [[ -z "$existing_pr_number" ]]; then
+if [[ -z "$existing_pr_url" ]]; then
     msg_main "Cleaning up old branch if exists..."
     (
         cd "$fork_path"
@@ -254,6 +256,15 @@ if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
 fi
 
 msg_main "Updating the docset in the fork repository..."
+
+if [[ -z "$latest_version" ]]; then
+    commit_message="Add new docset: $docset_bundle_name (\`$version\`)"
+    pr_body="This PR adds a new docset: **${docset_bundle_name}** version \`$version\`."
+else
+    commit_message="Update $docset_bundle_name to \`$version\`"
+    pr_body="This PR updates the **${docset_bundle_name}** docset to version \`$version\`."
+fi
+
 (
     cd "$fork_path"
 
@@ -289,10 +300,32 @@ msg_main "Updating the docset in the fork repository..."
     cat "$root/docset.json"
 
     git add -A
-    if [[ -z "$latest_version" ]]; then
-        git commit -m "Add new docset: $docset_bundle_name ($version)"
-    else
-        git commit -m "Update $docset_bundle_name to $version"
-    fi
+    git commit -m "$commit_message"
     git push -u origin "$branch"
 )
+
+if [[ -z "$existing_pr_url" ]]; then
+    msg_main "Creating a new pull request..."
+    pr_url=$(gh pr create \
+        --repo "$UPSTREAM_REPO" \
+        --base master \
+        --title "$commit_message" \
+        --body "$pr_body" \
+        --head "$fork_owner:$branch" 2>/dev/null
+    ) || {
+        msg_error "Failed to create a new pull request."
+        exit 9
+    }
+    msg_sub "Pull request created: $pr_url"
+else
+    msg_main "Updating existing pull request: $existing_pr_url..."
+    pr_url=$(gh pr edit "$existing_pr_url" \
+        --repo "$UPSTREAM_REPO" \
+        --title "$commit_message" \
+        --body "$pr_body" 2>/dev/null
+    ) || {
+        msg_error "Failed to update existing pull request."
+        exit 10
+    }
+    msg_sub "Pull request updated: $pr_url"
+fi
