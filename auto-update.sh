@@ -174,7 +174,11 @@ msg_sub "Archived $docset_filename to $docset_archive"
 
 msg_main "Preparing the fork repository..."
 if [[ ! -d "$fork_path" ]]; then
-    git clone "https://github.com/${FORK_REPO}.git" "$fork_path"
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        git clone "https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPO}.git" "$fork_path"
+    else
+        git clone "https://github.com/${FORK_REPO}.git" "$fork_path"
+    fi
 else
     (
         cd "$fork_path"
