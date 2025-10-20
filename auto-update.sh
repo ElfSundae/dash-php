@@ -6,7 +6,6 @@ set -euo pipefail
 
 FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
 UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
-UPSTREAM_REPO="$FORK_REPO" # For testing purpose
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT="$ROOT/output"
