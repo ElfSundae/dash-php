@@ -1,3 +1,23 @@
+diff --git a/phpdotnet/phd/Package/Generic/XHTML.php b/phpdotnet/phd/Package/Generic/XHTML.php
+index ad9dc32..e6da8a5 100644
+--- a/phpdotnet/phd/Package/Generic/XHTML.php
++++ b/phpdotnet/phd/Package/Generic/XHTML.php
+@@ -679,7 +679,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
+             $basename = basename($css);
+             $dest = md5(substr($css, 0, -strlen($basename))) . '-' . $basename;
+             if (@copy($css, $stylesDir . $dest)) {
+-                $this->stylesheets[] = $dest;
++                // Change file name to include hash of the file contents instead of the file path
++                $oldPath = $stylesDir . $dest;
++                $dest = substr(md5_file($oldPath), 0, 8) . '-' . $basename;
++                if (rename($oldPath, $stylesDir . $dest)) {
++                    $this->stylesheets[] = $dest;
++                } else {
++                    trigger_error(vsprintf('Impossible to rename the %s file.', [$oldPath]), E_USER_WARNING);
++                }
+             } else {
+                 trigger_error(vsprintf('Impossible to copy the %s file.', [$css]), E_USER_WARNING);
+             }
 diff --git a/phpdotnet/phd/Package/PHP/CHM.php b/phpdotnet/phd/Package/PHP/CHM.php
 index f172f26..fb9dd5e 100644
 --- a/phpdotnet/phd/Package/PHP/CHM.php
