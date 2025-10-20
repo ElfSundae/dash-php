@@ -303,7 +303,7 @@ fi
 
     if [[ "$lang" != "en" ]]; then
         jq --indent 4 --arg title "$localized_manual_title" \
-            '.aliases |= (. + [$title] | unique)' "$root/docset.json" \
+            '.aliases |= (if index($title) then . else . + [$title] end)' "$root/docset.json" \
             > temp.json && mv temp.json "$root/docset.json"
     fi
 
