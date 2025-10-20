@@ -121,6 +121,14 @@ normalize_lang_code() {
     fi
 }
 
+# Trim leading and trailing whitespace from a string: $string
+trim() {
+    local var="$1"
+    var="${var#"${var%%[![:space:]]*}"}"
+    var="${var%"${var##*[![:space:]]}"}"
+    printf '%s' "$var"
+}
+
 escape_sql_string() {
     local s="$1"
     s="${s//\'/''}"
@@ -328,17 +336,21 @@ SQL
                             ;;
                         Setting)
                             name=$(xmllint --html --xpath "string(//a[@href='$path'][1])" "$html_file" 2>/dev/null || true)
+                            name=$(trim "$name")
                             if [[ -z "$name" ]]; then
                                 name=$(xmllint --html --xpath "string(//*[@id='$id']//code[1])" "$html_file" 2>/dev/null || true)
                             fi
                             ;;
                         Property)
                             name=$(xmllint --html --xpath "string(//*[@id='$id']//var[@class='varname'][1])" "$html_file" 2>/dev/null || true)
+                            name=$(trim "$name")
                             if [[ -n "$name" ]]; then
                                 name="${extra}::${name}"
                             fi
                             ;;
                     esac
+
+                    name=$(trim "$name")
 
                     if [[ -z "${name:-}" ]]; then
                         if [[ "$DEV_MODE" == true ]]; then
