@@ -48,6 +48,12 @@ normalize_lang_code() {
     fi
 }
 
+# Compare two versions, return 0 if same, 1 if different: $version1 $version2
+version_same() {
+    local v1="$1" v2="$2"
+    [[ "${v1#*_}" == "${v2#*_}" ]]
+}
+
 # Obtain the version of the Dash docset: $docset_path
 docset_version() {
     local docset="$1"
@@ -159,7 +165,7 @@ latest_version=$(fetch_latest_docset_version "$docset_name") || {
 msg_sub "$docset_filename latest version: ${latest_version:-none}"
 
 # Compare versions to determine if an update is necessary
-if [[ "${version#*_}" == "${latest_version#*_}" ]]; then
+if version_same "$version" "$latest_version"; then
     msg_main "$docset_filename is already up-to-date, skipping update."
     exit 0
 fi
@@ -259,7 +265,7 @@ if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
     }
     msg_sub "Existing docset.json version: $exist_version"
 
-    if [[ "${version#*_}" == "${exist_version#*_}" ]]; then
+    if version_same "$version" "$exist_version"; then
         msg_main "$docset_filename is already up-to-date in the fork repository, skipping update."
         exit 0
     fi
