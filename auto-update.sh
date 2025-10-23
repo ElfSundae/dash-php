@@ -55,6 +55,7 @@ version_same() {
 }
 
 # Obtain the version of the Dash docset: $docset_path
+# Return empty string if failed, otherwise the version.
 docset_version() {
     local docset="$1"
 
@@ -78,7 +79,7 @@ docset_version() {
     echo "/${pubdate}_${indexes}_${hash}"
 }
 
-# Fetch the latest version of the Dash docset: $docset_name/$docset_filename/$docset_path
+# Fetch the latest version of the Dash docset: $docset_name OR $docset_filename OR $docset_path
 # Return non-zero exit code if request failed, empty string if not found, otherwise the version.
 fetch_latest_docset_version() {
     local name; name=$(basename "$1" .docset)
@@ -88,21 +89,22 @@ fetch_latest_docset_version() {
     local response; response=$(curl -fsL -w "\n%{http_code}" "$url" 2>/dev/null) || exit_code=$?
     local http_code; http_code=$(echo "$response" | tail -n1)
 
+    # Return empty string if docset does not exist upstream (404)
     if [[ $http_code -eq 404 ]]; then
-        # the docset does not exist upstream
         echo ""
         return 0
     fi
 
+    # Return failure if request failed or HTTP status is not 200
     if [[ $exit_code -ne 0 || $http_code -ne 200 ]]; then
-        # request failed
         return 1
     fi
 
+    # Extract version from JSON response
     local version; version=$( (echo "$response" | sed '$d' | jq -r '.version') 2>/dev/null )
 
+    # Return failure if version is empty or null - invalid docset.json
     if [[ -z "$version" || "$version" == "null" ]]; then
-        # invalid docset.json
         return 1
     fi
 
@@ -257,15 +259,16 @@ msg_main "Checking out branch '$branch'..."
 )
 
 # Compare existing docset.json version (PR in progress) to determine if an update is necessary.
-if [[ -f "$fork_path/docsets/$docset_name/docset.json" ]]; then
+fork_docset_json="$fork_path/docsets/$docset_name/docset.json"
+if [[ -f "$fork_docset_json" ]]; then
     msg_main "Reading existing docset.json version in the fork repository..."
-    exist_version=$(jq -r '.version' "$fork_path/docsets/$docset_name/docset.json" 2>/dev/null) || {
+    existing_version=$(jq -r '.version' "$fork_docset_json" 2>/dev/null) || {
         msg_error "Failed to read existing docset.json version."
         exit 8
     }
-    msg_sub "Existing docset.json version: $exist_version"
+    msg_sub "Existing docset.json version: $existing_version"
 
-    if version_same "$version" "$exist_version"; then
+    if version_same "$version" "$existing_version"; then
         msg_main "$docset_filename is already up-to-date in the fork repository, skipping update."
         exit 0
     fi
