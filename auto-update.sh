@@ -76,9 +76,7 @@ docset_version() {
 
     local hash; hash=$(
         cd "$docset" 2>/dev/null || { echo ""; exit 0; }
-        find . -type f \
-            -not -name '.DS_Store' \
-            -not -name '*.dsidx' \
+        find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
             -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
     )
     [[ -n "$hash" ]] || { echo ""; return 0; }
