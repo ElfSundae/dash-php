@@ -75,11 +75,11 @@ docset_version() {
     [[ -n "$indexes" ]] || { echo ""; return 0; }
 
     local hash; hash=$(
-        cd "$docset" 2>/dev/null || { echo ""; return 0; }
+        cd "$docset" 2>/dev/null || { echo ""; exit 0; }
         find . -type f \
             -not -name '.DS_Store' \
             -not -name '*.dsidx' \
-            -print0 | sort -z | xargs -0 md5sum | md5sum | cut -c1-6
+            -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
     )
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
@@ -118,7 +118,7 @@ fetch_latest_docset_version() {
     echo "$version"
 }
 
-require xmllint sqlite3 curl jq tar git gh
+require xmllint sqlite3 md5sum curl jq tar git gh
 
 if [[ $# -lt 1 ]]; then
     msg_error "Usage: $0 <lang> [options...]"
