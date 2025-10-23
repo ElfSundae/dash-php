@@ -1,0 +1,48 @@
+name: Publish PHP Dash Docsets
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  publish-docset:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        lang:
+          - "en"
+          - "zh"
+
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils tar
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Build docset (${{ matrix.lang }})
+        run: ./generate.sh ${{ matrix.lang }}
+
+      - name: 'Archive docset: PHP_${{ matrix.lang }}.docset'
+        run: |
+          (
+            cd output
+            tar --exclude='.DS_Store' --exclude='optimizedIndex.dsidx' -czf \
+              PHP_${{ matrix.lang }}.tgz PHP_${{ matrix.lang }}.docset
+          )
+
+      - name: 'Upload Release Asset: PHP_${{ matrix.lang }}.tgz'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: 'docsets'
+          files: "output/PHP_${{ matrix.lang }}.tgz"
