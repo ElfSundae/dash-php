@@ -218,18 +218,18 @@ fi
 )
 
 msg_main "Checking for existing pull requests..."
-existing_pr_url=$(gh pr list \
+if ! existing_pr_url=$(gh pr list \
     --repo "$UPSTREAM_REPO" \
     --base master \
     --author "$fork_owner" \
     --head "$branch" \
     --state open \
     --json url \
-    --jq '.[0].url' 2>/dev/null
-) || {
+    --jq '.[0].url'
+); then
     msg_error "Failed to check existing pull requests."
     exit 6
-}
+fi
 msg_sub "Existing pull request: ${existing_pr_url:-none}"
 
 # If no existing opened PR on this branch, clean up old branch if exists, to avoid conflicts.
@@ -334,26 +334,26 @@ fi
 
 if [[ -z "$existing_pr_url" ]]; then
     msg_main "Creating a new pull request..."
-    pr_url=$(gh pr create \
+    if ! pr_url=$(gh pr create \
         --repo "$UPSTREAM_REPO" \
         --base master \
         --title "$commit_message" \
         --body "$pr_body" \
-        --head "$fork_owner:$branch" 2>/dev/null
-    ) || {
+        --head "$fork_owner:$branch"
+    ); then
         msg_error "Failed to create a new pull request."
         exit 9
-    }
+    fi
     msg_sub "Pull request created: $pr_url"
 else
     msg_main "Updating existing pull request: $existing_pr_url..."
-    pr_url=$(gh pr edit "$existing_pr_url" \
+    if ! pr_url=$(gh pr edit "$existing_pr_url" \
         --repo "$UPSTREAM_REPO" \
         --title "$commit_message" \
-        --body "$pr_body" 2>/dev/null
-    ) || {
+        --body "$pr_body"
+    ); then
         msg_error "Failed to update existing pull request."
         exit 10
-    }
+    fi
     msg_sub "Pull request updated: $pr_url"
 fi
