@@ -16,6 +16,9 @@ jobs:
           - "en"
           - "zh"
 
+    permissions:
+      contents: write
+
     steps:
       - name: Install tools
         run: |
