@@ -7,6 +7,13 @@ set -euo pipefail
 FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
 UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
 
+DEV_MODE=false
+if [[ " $* " == *" --dev "* ]]; then
+    DEV_MODE=true
+    # Use the fork as upstream in dev mode
+    UPSTREAM_REPO="$FORK_REPO"
+fi
+
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 OUTPUT="$ROOT/output"
 
@@ -131,10 +138,12 @@ branch="auto-update-${docset_name}"
 msg_main "Auto updating ${docset_filename}..."
 
 # Generate the Dash docset
-"$ROOT/generate.sh" "$lang" "$@" || {
-    msg_error "Failed to generate Dash docset for language: $lang"
-    exit 2
-}
+if [[ "$DEV_MODE" == false || ! -d "$OUTPUT/$docset_filename" ]]; then
+    "$ROOT/generate.sh" "$lang" "$@" || {
+        msg_error "Failed to generate Dash docset for language: $lang"
+        exit 2
+    }
+fi
 
 docset_bundle_name=$(xmllint \
     --xpath 'string(/plist/dict/key[.="CFBundleName"]/following-sibling::string[1])' \
