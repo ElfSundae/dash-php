@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dash Feed Redirect</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      padding: 2rem;
+      line-height: 1.5;
+      color: #111;
+      background: #f7f7f8;
+    }
+
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 1.25rem 1.5rem;
+      max-width: 880px;
+      margin: 1rem auto;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    a.feed {
+      color: #0b63d6;
+      word-break: break-all;
+    }
+
+    small {
+      color: #666
+    }
+  </style>
+</head>
+<body>
+  <div class="card" id="card">
+    <h1>Dash Feed Redirect</h1>
+
+    <p>
+      <!-- The link will be updated by JavaScript to show the actual dash-feed:// URL -->
+      <a id="dashLink" class="feed" href="#" rel="noopener">dash-feed://...</a>
+    </p>
+
+    <p>If your browser doesn't redirect automatically, click the link above.</p>
+  </div>
+
+  <noscript>
+    <div class="card">
+      <p><strong>JavaScript is required</strong> to build the dash feed URL and redirect automatically.</p>
+    </div>
+  </noscript>
+
+  <script>
+    (function () {
+      // Read lang param (default 'en')
+      const params = new URLSearchParams(location.search);
+      let lang = (params.get('lang') || 'en').trim();
+      lang = lang.includes('_')
+        ? lang.replace(/^([^_]+)_([^_]+)$/, (_, a, b) => a.toLowerCase() + '_' + b.toUpperCase())
+        : lang.toLowerCase();
+
+      // Build dash-feed URL
+      const feedUrl = `https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_${lang}.tgz.xml`;
+      const dashFeedUrl = 'dash-feed://' + encodeURIComponent(feedUrl);
+
+      // Update visible link
+      const link = document.getElementById('dashLink');
+      link.href = dashFeedUrl;
+      link.textContent = dashFeedUrl;
+
+      // Auto-redirect to dash-feed scheme
+      location.replace(dashFeedUrl);
+    })();
+  </script>
+</body>
+</html>
