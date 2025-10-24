@@ -35,7 +35,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxml2-utils
+          sudo apt-get install -y sqlite3 libxml2-utils
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -45,7 +45,6 @@ jobs:
       - name: Check env
         run: |
           php -v
-          pear version
           sqlite3 -version
           xmllint --version
           wget --version

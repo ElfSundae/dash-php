@@ -16,7 +16,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y libxml2-utils tar
+          sudo apt-get install -y sqlite3 libxml2-utils tar
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
