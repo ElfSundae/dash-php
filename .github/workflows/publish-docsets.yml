@@ -29,11 +29,19 @@ jobs:
       - name: Build release assets
         run: ./build-release.sh
 
+      - name: Prepare release files
+        id: prepare
+        run: |
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          cat release/release-files.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Publish docsets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: 'docsets'
           name: 'PHP Manual Dash Docsets'
           body_path: release/release-body.md
-          files: $(cat release/release-files.txt)
+          files: ${{ steps.prepare.outputs.files }}
           preserve_order: true
+          make_latest: true

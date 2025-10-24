@@ -78,7 +78,6 @@ EOF
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
 
-> "$RELEASE_BODY" || { msg_error "Failed to create $RELEASE_BODY"; exit 1; }
 > "$RELEASE_FILES" || { msg_error "Failed to create $RELEASE_FILES"; exit 1; }
 
 for lang in "${LANG_CODES[@]}"; do
@@ -90,10 +89,10 @@ if [[ ! -s "$RELEASE_FILES" ]]; then
     exit 10
 fi
 
-cat <<EOF >> "$RELEASE_BODY"
+cat <<EOF > "$RELEASE_BODY"
 This release provides automatically updated Dash docsets for the [PHP Manual](https://www.php.net/manual), available in multiple languages.
 
 | Docset | Version | Feed URL |
-|---------|----------|----------|
+|--------|---------|----------|
 $DOCSET_VERSIONS_ROWS
 EOF
