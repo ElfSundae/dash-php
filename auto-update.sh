@@ -90,12 +90,11 @@ if [[ "$DEV_MODE" == false || ! -d "$OUTPUT/$docset_filename" ]]; then
     }
 fi
 
-docset_bundle_name=$(xmllint \
-    --xpath 'string(/plist/dict/key[.="CFBundleName"]/following-sibling::string[1])' \
-    "$OUTPUT/$docset_filename/Contents/Info.plist" 2>/dev/null) || {
+docset_bundle_name=$(get_docset_bundle_name "$OUTPUT/$docset_filename")
+if [[ -z "$docset_bundle_name" ]]; then
     msg_error "Failed to obtain docset bundle name."
     exit 3
-}
+fi
 msg_main "Docset bundle name: $docset_bundle_name"
 
 localized_manual_title=$(xmllint --html --xpath 'string(//title[1])' \
@@ -106,7 +105,7 @@ localized_manual_title=$(xmllint --html --xpath 'string(//title[1])' \
 msg_main "Localized manual title: $localized_manual_title"
 
 msg_main "Obtaining the docset version..."
-version=$(docset_version "$OUTPUT/$docset_filename")
+version=$(get_docset_version "$OUTPUT/$docset_filename")
 if [[ -z "$version" ]]; then
     msg_error "Failed to obtain the docset version."
     exit 3

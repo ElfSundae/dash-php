@@ -77,7 +77,7 @@ get_lang_name() {
 
 # Obtain the version of the Dash docset: $docset_path
 # Return empty string if failed, otherwise the version.
-docset_version() {
+get_docset_version() {
     local docset="$1"
 
     local pubdate; pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
@@ -96,4 +96,15 @@ docset_version() {
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
     echo "/${pubdate}_${indexes}_${hash}"
+}
+
+# Obtain the CFBundleName of the Dash docset: $docset_path
+# Return empty string if failed, otherwise the bundle name.
+get_docset_bundle_name() {
+    local docset="$1"
+    xmllint --xpath 'string(/plist/dict/key[.="CFBundleName"]/following-sibling::string[1])' \
+        "$docset/Contents/Info.plist" 2>/dev/null || {
+        echo ""
+        return 0
+    }
 }
