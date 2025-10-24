@@ -25,7 +25,8 @@ build_release() {
     local docset_archive="${docset_name}.tgz"
     local docset_archive_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${docset_archive}"
     local feed_filename="${docset_archive}.xml"
-    local feed_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
+    local feed_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${feed_filename}"
+    local install_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
     local docset="$OUTPUT/$docset_filename"
 
     local docset_bundle_name version
@@ -72,13 +73,15 @@ EOF
 
     echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_FILES"
     echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_FILES"
-    DOCSET_VERSIONS_ROWS+="| ${NOWRAP_BEGIN}${docset_bundle_name}${NOWRAP_END} | ${NOWRAP_BEGIN}\`${version}\`${NOWRAP_END} | <${feed_url}> |"$'\n'
+    DOCSET_VERSIONS_ROWS+="| ${NOWRAP_BEGIN}${docset_bundle_name}${NOWRAP_END} | \
+${NOWRAP_BEGIN}\`${version}\`${NOWRAP_END} | \
+<${feed_url}> | \
+[Install in Dash](${install_url}) | \
+"$'\n'
 }
 
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
-
-> "$RELEASE_FILES" || { msg_error "Failed to create $RELEASE_FILES"; exit 1; }
 
 for lang in "${LANG_CODES[@]}"; do
     build_release "$lang"
@@ -92,7 +95,7 @@ fi
 cat <<EOF > "$RELEASE_BODY"
 This release provides automatically updated Dash docsets for the [PHP Manual](https://www.php.net/manual), available in multiple languages.
 
-| Docset | Version | Feed URL |
-|--------|---------|----------|
+| Docset | Version | Feed URL | Install |
+|--------|---------|----------|---------|
 $DOCSET_VERSIONS_ROWS
 EOF
