@@ -4,8 +4,12 @@ set -euo pipefail
 # Automatically update the PHP docset to the Dash user contributed docsets repository.
 # This script is designed to be executed both locally and within a GitHub workflow.
 
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+source "$ROOT/lib/common.sh"
+
 FORK_REPO="${FORK_REPO:-ElfSundae/Dash-User-Contributions}"
 UPSTREAM_REPO="Kapeli/Dash-User-Contributions"
+OUTPUT="$ROOT/output"
 
 DEV_MODE=false
 if [[ " $* " == *" --dev "* ]]; then
@@ -14,74 +18,10 @@ if [[ " $* " == *" --dev "* ]]; then
     UPSTREAM_REPO="$FORK_REPO"
 fi
 
-ROOT="$(cd "$(dirname "$0")" && pwd)"
-OUTPUT="$ROOT/output"
-
-# Define colors for output messages
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-NC="\033[0m" # No Color
-
-msg_main() {
-    echo -e "${GREEN}[+] $*${NC}"
-}
-
-msg_sub() {
-    echo -e "    $*"
-}
-
-msg_error() {
-    echo -e "${RED}[!] $*${NC}" >&2
-}
-
-require() {
-    local cmd
-    for cmd in "$@"; do
-        command -v "$cmd" >/dev/null 2>&1 || { msg_error "Missing command: $cmd"; exit 1; }
-    done
-}
-
-# Normalize the language code to a standard format (e.g., "en_us" to "en_US")
-normalize_lang_code() {
-    local code="$1"
-    local lang region
-
-    if [[ "$code" == *_* ]]; then
-        lang="${code%%_*}"
-        region="${code##*_}"
-        echo "$(tr '[:upper:]' '[:lower:]' <<<"$lang")_$(tr '[:lower:]' '[:upper:]' <<<"$region")"
-    else
-        echo "$(tr '[:upper:]' '[:lower:]' <<<"$code")"
-    fi
-}
-
 # Compare two versions, return 0 if same, 1 if different: $version1 $version2
 version_same() {
     local v1="$1" v2="$2"
     [[ "${v1#*_}" == "${v2#*_}" ]]
-}
-
-# Obtain the version of the Dash docset: $docset_path
-# Return empty string if failed, otherwise the version.
-docset_version() {
-    local docset="$1"
-
-    local pubdate; pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
-        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs)
-    [[ -n "$pubdate" ]] || { echo ""; return 0; }
-
-    local indexes; indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
-        'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null)
-    [[ -n "$indexes" ]] || { echo ""; return 0; }
-
-    local hash; hash=$(
-        cd "$docset" 2>/dev/null || { echo ""; exit 0; }
-        find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
-            -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
-    )
-    [[ -n "$hash" ]] || { echo ""; return 0; }
-
-    echo "/${pubdate}_${indexes}_${hash}"
 }
 
 # Fetch the latest version of the Dash docset: $docset_name OR $docset_filename OR $docset_path
@@ -116,14 +56,21 @@ fetch_latest_docset_version() {
     echo "$version"
 }
 
-require xmllint sqlite3 md5sum curl jq tar git gh
+require_command php git sqlite3 xmllint
+require_command md5sum curl jq tar gh
 
 if [[ $# -lt 1 ]]; then
     msg_error "Usage: $0 <lang> [options...]"
     exit 1
 fi
 
-lang=$(normalize_lang_code "$1"); shift
+lang=$(normalize_lang_code "$1")
+if [[ " ${LANG_CODES[*]} " =~ " ${lang} " ]]; then
+    shift
+else
+    msg_error "Unsupported language code: ${lang}"
+    exit 1
+fi
 
 docset_name="PHP_${lang}"
 docset_filename="${docset_name}.docset"

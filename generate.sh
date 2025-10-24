@@ -1,29 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Define colors for output messages
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-NC="\033[0m" # No Color
-
-# Determine sed in-place editing option for macOS or Linux
-if [[ "$(uname)" == "Darwin" ]]; then
-    SED_INPLACE=(-i '')
-else
-    SED_INPLACE=(-i)
-fi
-
-# Supported languages: https://github.com/php/web-php/blob/master/src/I18n/Languages.php
-# You may run the following command to get the latest language codes:
-# `tmp=$(mktemp) && curl -fsSL 'https://raw.githubusercontent.com/php/web-php/master/src/I18n/Languages.php' -o "$tmp" && php -r 'require '"'$tmp'"'; echo implode(" ", array_keys(\phpweb\I18n\Languages::ACTIVE_ONLINE_LANGUAGES)).PHP_EOL;' && rm -f "$tmp"`
-LANG_CODES=(en de es fr it ja pt_BR ru tr uk zh)
-LANG_NAMES=(
-    "English" "Deutsch" "Español" "Français" "Italiano" "日本語"
-    "Português Brasil" "Русский" "Türkçe" "Українська" "简体中文"
-)
-
-# The root directory of this script
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+source "$ROOT/lib/common.sh"
+
 # The root directory of the PHP doc repositories
 PHPDOC="$ROOT/phpdoc"
 
@@ -69,55 +49,12 @@ Options:
 EOF
 }
 
-msg_main() {
-    echo -e "${GREEN}➤ $*${NC}"
-}
-
-msg_sub() {
-    echo -e "  ⏳ $*"
-}
-
-msg_done() {
-    echo -e "${GREEN}✔ $*${NC}"
-}
-
-msg_error() {
-    echo -e "${RED}❌ $*${NC}" >&2
-}
-
 # Run a shell command with optional verbose output: $cmd
 run() {
     if [[ "${VERBOSE:-false}" == true ]]; then
         "$@"
     else
         "$@" >/dev/null 2>&1
-    fi
-}
-
-# Get the language name from the language code: $code
-get_lang_name() {
-    local code="$1"
-    local i
-    for i in "${!LANG_CODES[@]}"; do
-        if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
-            echo "${LANG_NAMES[$i]}"
-            return 0
-        fi
-    done
-    return 1
-}
-
-# Normalize the language code to a standard format (e.g., "en_us" to "en_US")
-normalize_lang_code() {
-    local code="$1"
-    local lang region
-
-    if [[ "$code" == *_* ]]; then
-        lang="${code%%_*}"
-        region="${code##*_}"
-        echo "$(tr '[:upper:]' '[:lower:]' <<<"$lang")_$(tr '[:lower:]' '[:upper:]' <<<"$region")"
-    else
-        echo "$(tr '[:upper:]' '[:lower:]' <<<"$code")"
     fi
 }
 
@@ -435,6 +372,8 @@ generate_docsets() {
 
 # Generate a php.net mirror in the output directory
 generate_mirror() {
+    require_command rsync wget
+
     local root="$BUILD/php.net"
 
     msg_main "Generating php.net mirror..."
@@ -491,6 +430,8 @@ main() {
         generate_docsets
     fi
 }
+
+require_command php git sqlite3 xmllint
 
 # Parse command-line arguments
 while [[ $# -gt 0 ]]; do
