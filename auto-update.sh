@@ -95,14 +95,14 @@ if [[ -z "$docset_bundle_name" ]]; then
     msg_error "Failed to obtain docset bundle name."
     exit 3
 fi
-msg_main "Docset bundle name: $docset_bundle_name"
+msg_main "$docset_filename bundle name: $docset_bundle_name"
 
 localized_manual_title=$(xmllint --html --xpath 'string(//title[1])' \
     "$OUTPUT/$docset_filename/Contents/Resources/Documents/index.html" 2>/dev/null) || {
     msg_error "Failed to obtain localized manual title."
     exit 3
 }
-msg_main "Localized manual title: $localized_manual_title"
+msg_main "$docset_filename localized manual title: $localized_manual_title"
 
 msg_main "Obtaining the docset version..."
 version=$(get_docset_version "$OUTPUT/$docset_filename")
