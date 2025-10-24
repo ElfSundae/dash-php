@@ -54,6 +54,7 @@
     (function () {
       // Read lang param (default 'en')
       const params = new URLSearchParams(location.search);
+
       let lang = (params.get('lang') || 'en').trim();
       lang = lang.includes('_')
         ? lang.replace(/^([^_]+)_([^_]+)$/, (_, a, b) => a.toLowerCase() + '_' + b.toUpperCase())
