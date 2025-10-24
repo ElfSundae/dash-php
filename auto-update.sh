@@ -84,7 +84,7 @@ msg_main "Auto updating ${docset_filename}..."
 
 # Generate the Dash docset
 if [[ "$DEV_MODE" == false || ! -d "$OUTPUT/$docset_filename" ]]; then
-    "$ROOT/generate.sh" "$lang" "$@" || {
+    "$ROOT/generate.sh" "$lang" "$@" --output "$OUTPUT" || {
         msg_error "Failed to generate Dash docset for language: $lang"
         exit 2
     }
