@@ -15,6 +15,22 @@ Generate [Dash](https://kapeli.com/dash) docsets for the official [PHP Manual](h
 - **Cross-platform support** (macOS and Linux).
 - **Customizable output directory** and **verbose mode** for debugging.
 
+## Install Generated PHP Docsets
+
+**[Dash](https://kapeli.com/dash) (macOS):**
+
+1. Open Dash and navigate to `Settings...` > `Downloads`.
+2. In the left panel, select **"User Contributed"**.
+3. Enter `php` in the search box on the right panel.
+
+Specifically, to install the PHP English docset, [click here](https://elfsundae.github.io/dash-php/feed/?lang=en).
+
+**[Zeal](https://zealdocs.org) (Windows/Linux):**
+
+1. Open Zeal and navigate to `Tools` > `Docsets`.
+2. Click the **"Add feed"** button in the lower-left corner.
+3. Paste the Feed URL found on the [Release page](https://github.com/ElfSundae/dash-php/releases/tag/docsets) to add the desired PHP docset.
+
 ## Usage
 
 ```bash
