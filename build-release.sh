@@ -14,8 +14,6 @@ RELEASE_FILES="$OUTPUT/release-files.txt"
 
 # Store docset versions table rows for release body
 DOCSET_VERSIONS_ROWS=""
-NOWRAP_BEGIN='<span style="white-space: nowrap;">'
-NOWRAP_END='</span>'
 
 build_release() {
     local lang=$(normalize_lang_code "$1")
@@ -73,11 +71,8 @@ EOF
 
     echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_FILES"
     echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_FILES"
-    DOCSET_VERSIONS_ROWS+="| ${NOWRAP_BEGIN}${docset_bundle_name}${NOWRAP_END} | \
-${NOWRAP_BEGIN}\`${version}\`${NOWRAP_END} | \
-<${feed_url}> | \
-[Install in Dash](${install_url}) | \
-"$'\n'
+    DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \`${version}\` | \
+<${feed_url}> | [Install in Dash](${install_url}) |"$'\n'
 }
 
 rm -rf "$OUTPUT"
