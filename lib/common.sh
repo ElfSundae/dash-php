@@ -79,20 +79,27 @@ get_lang_name() {
 # Return empty string if failed, otherwise the version.
 get_docset_version() {
     local docset="$1"
+    local pubdate indexes hash
 
-    local pubdate; pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
-        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs)
+    if ! pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
+            "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs); then
+        pubdate=""
+    fi
     [[ -n "$pubdate" ]] || { echo ""; return 0; }
 
-    local indexes; indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
-        'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null)
+    if ! indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
+            'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null); then
+        indexes=""
+    fi
     [[ -n "$indexes" ]] || { echo ""; return 0; }
 
-    local hash; hash=$(
-        cd "$docset" 2>/dev/null || { echo ""; exit 0; }
+    if ! hash=$(
+        cd "$docset" 2>/dev/null || { exit 1; }
         find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
             -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
-    )
+    ); then
+        hash=""
+    fi
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
     echo "/${pubdate}_${indexes}_${hash}"
