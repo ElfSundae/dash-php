@@ -81,27 +81,23 @@ get_docset_version() {
     local docset="$1"
     local pubdate indexes hash
 
-    if ! pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
-            "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs); then
-        pubdate=""
-    fi
+    pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
+        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs || true)
     [[ -n "$pubdate" ]] || { echo ""; return 0; }
 
-    if ! indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
-            'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null); then
-        indexes=""
-    fi
+    indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
+        'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null || true)
     [[ -n "$indexes" ]] || { echo ""; return 0; }
 
     # The regex matches `uniqid()`.html files, like PHP_es.docset/Contents/Resources/Documents/68fca58a0edb6.html
-    if ! hash=$(
-        cd "$docset" 2>/dev/null || { exit 1; }
-        find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
-            ! -regex '.*/[0-9a-f]\{13\}\.html$' \
-            -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
-    ); then
-        hash=""
-    fi
+    hash=$(
+        (
+            cd "$docset"
+            find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
+                ! -regex '.*/[0-9a-f]\{13\}\.html$' \
+                -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
+        ) 2>/dev/null || true
+    )
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
     echo "/${pubdate}_${indexes}_${hash}"
