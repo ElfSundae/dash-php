@@ -46,7 +46,7 @@ fetch_latest_docset_version() {
     fi
 
     # Extract version from JSON response
-    local version; version=$( (echo "$response" | sed '$d' | jq -r '.version') 2>/dev/null )
+    local version; version=$( (echo "$response" | sed '$d' | jq -r '.version') 2>/dev/null || true )
 
     # Return failure if version is empty or null - invalid docset.json
     if [[ -z "$version" || "$version" == "null" ]]; then
