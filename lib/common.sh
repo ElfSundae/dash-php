@@ -95,7 +95,9 @@ get_docset_version() {
 
     if ! hash=$(
         cd "$docset" 2>/dev/null || { exit 1; }
+        # The regex matches `uniqid()`.html files, like PHP_es.docset/Contents/Resources/Documents/68fca58a0edb6.html
         find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
+            ! -regex '.*/[0-9a-f]\{13\}\.html$' \
             -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
     ); then
         hash=""
