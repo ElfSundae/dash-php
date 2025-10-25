@@ -290,7 +290,7 @@ if [[ -z "$existing_pr_url" ]]; then
     fi
     msg_sub "Pull request created: $pr_url"
 else
-    msg_main "Updating existing pull request: $existing_pr_url..."
+    msg_main "Updating existing pull request: $existing_pr_url ..."
     if ! pr_url=$(gh pr edit "$existing_pr_url" \
         --repo "$UPSTREAM_REPO" \
         --title "$commit_message" \
