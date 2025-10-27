@@ -89,13 +89,13 @@ get_docset_version() {
         'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null || true)
     [[ -n "$indexes" ]] || { echo ""; return 0; }
 
-    # The regex matches `uniqid()`.html files, like PHP_es.docset/Contents/Resources/Documents/68fca58a0edb6.html
+    # The regex matches `uniqid()`.html files, like `PHP_es.docset/Contents/Resources/Documents/68fca58a0edb6.html`
     hash=$(
         (
             cd "$docset"
-            find . -type f ! -name '.DS_Store' ! -name '*.dsidx' \
-                ! -regex '.*/[0-9a-f]\{13\}\.html$' \
-                -print0 | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
+            find . -type f ! -name '.DS_Store' ! -name '*.dsidx' -print0 \
+                | grep -zEv '/[0-9a-f]{13}\.html$' \
+                | LC_ALL=C sort -z | xargs -0 md5sum | md5sum | cut -c1-6
         ) 2>/dev/null || true
     )
     [[ -n "$hash" ]] || { echo ""; return 0; }

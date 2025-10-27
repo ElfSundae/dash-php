@@ -33,12 +33,18 @@ jobs:
 
       - name: Generate docsets
         run: |
-          ./generate.sh zh es fr
+          ./generate.sh es fr
 
-      - name: Test get_docset_version()
+      - name: Test find -regex
         run: |
-          source ./lib/common.sh
           for docset in output/*.docset; do
-            version=$(get_docset_version "$docset")
-            echo "$docset version: $version"
+            find "$docset" -type f -print0 | grep -zE '/[0-9a-f]{13}\.html$' | xargs -0 -n1 echo
           done
+
+      # - name: Test get_docset_version()
+      #   run: |
+      #     source ./lib/common.sh
+      #     for docset in output/*.docset; do
+      #       version=$(get_docset_version "$docset")
+      #       echo "$docset version: $version"
+      #     done
