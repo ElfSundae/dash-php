@@ -78,7 +78,7 @@
       }
 
       // Build dash-feed URL
-      const feedFilename = `PHP (${languages[lang]}).xml`.replace(/ /g, '_');
+      const feedFilename = `PHP - ${languages[lang]}.xml`.replace(/ /g, '_');
       const feedUrl = 'https://github.com/ElfSundae/dash-php/releases/download/docsets/' + feedFilename;
       const dashFeedUrl = 'dash-feed://' + encodeURIComponent(feedUrl);
 
