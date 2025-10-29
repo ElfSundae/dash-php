@@ -52,6 +52,20 @@
 
   <script>
     (function () {
+      const languages = {
+        'en': 'English',
+        'de': 'German',
+        'es': 'Spanish',
+        'fr': 'French',
+        'it': 'Italian',
+        'ja': 'Japanese',
+        'pt_BR': 'Brazilian Portuguese',
+        'ru': 'Russian',
+        'tr': 'Turkish',
+        'uk': 'Ukrainian',
+        'zh': 'Simplified Chinese'
+      };
+
       // Read lang param (default 'en')
       const params = new URLSearchParams(location.search);
 
@@ -59,9 +73,13 @@
       lang = lang.includes('_')
         ? lang.replace(/^([^_]+)_([^_]+)$/, (_, a, b) => a.toLowerCase() + '_' + b.toUpperCase())
         : lang.toLowerCase();
+      if (!languages.hasOwnProperty(lang)) {
+        return;
+      }
 
       // Build dash-feed URL
-      const feedUrl = `https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_${lang}.tgz.xml`;
+      const feedFilename = `PHP (${languages[lang]}).xml`.replace(/ /g, '_');
+      const feedUrl = 'https://github.com/ElfSundae/dash-php/releases/download/docsets/' + feedFilename;
       const dashFeedUrl = 'dash-feed://' + encodeURIComponent(feedUrl);
 
       // Update visible link

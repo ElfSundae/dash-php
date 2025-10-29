@@ -20,12 +20,14 @@ build_release() {
 
     local docset_name="PHP_${lang}"
     local docset_filename="${docset_name}.docset"
+    local docset="$OUTPUT/$docset_filename"
     local docset_archive="${docset_name}.tgz"
     local docset_archive_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${docset_archive}"
-    local feed_filename="${docset_archive}.xml"
+
+    local lang_en_name=$(get_lang_en_name "$lang")
+    local feed_filename="PHP_(${lang_en_name// /_}).xml"
     local feed_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${feed_filename}"
     local install_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
-    local docset="$OUTPUT/$docset_filename"
 
     local docset_bundle_name version
 
