@@ -21,7 +21,7 @@ fi
 LANG_CODES=(en de es fr it ja pt_BR ru tr uk zh)
 LANG_NAMES=(
     "English" "Deutsch" "Español" "Français" "Italiano" "日本語"
-    "Português Brasil" "Русский" "Türkçe" "Українська" "简体中文"
+    "Português brasileiro" "Русский" "Türkçe" "Українська" "简体中文"
 )
 
 msg_main() {
