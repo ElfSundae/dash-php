@@ -19,9 +19,13 @@ fi
 # You may run the following command to get the latest language codes:
 # `tmp=$(mktemp) && curl -fsSL 'https://raw.githubusercontent.com/php/web-php/master/src/I18n/Languages.php' -o "$tmp" && php -r 'require '"'$tmp'"'; echo implode(" ", array_keys(\phpweb\I18n\Languages::ACTIVE_ONLINE_LANGUAGES)).PHP_EOL;' && rm -f "$tmp"`
 LANG_CODES=(en de es fr it ja pt_BR ru tr uk zh)
-LANG_NAMES=(
+LANG_LOCAL_NAMES=(
     "English" "Deutsch" "Español" "Français" "Italiano" "日本語"
-    "Português brasileiro" "Русский" "Türkçe" "Українська" "简体中文"
+    "Português Brasileiro" "Русский" "Türkçe" "Українська" "简体中文"
+)
+LANG_EN_NAMES=(
+    "English" "German" "Spanish" "French" "Italian" "Japanese"
+    "Brazilian Portuguese" "Russian" "Turkish" "Ukrainian" "Simplified Chinese"
 )
 
 msg_main() {
@@ -62,17 +66,29 @@ normalize_lang_code() {
     fi
 }
 
-# Get the language name from the language code: $code
-get_lang_name() {
+# Get the language name by code from a specified array: $code, $array_name
+_get_lang_name() {
     local code="$1"
+    local array_name="$2"
     local i
+
     for i in "${!LANG_CODES[@]}"; do
         if [[ "${LANG_CODES[$i]}" == "$code" ]]; then
-            echo "${LANG_NAMES[$i]}"
+            eval "echo \${${array_name}[$i]}"
             return 0
         fi
     done
     return 1
+}
+
+# Get the local (native) name of the language: $code
+get_lang_local_name() {
+    _get_lang_name "$1" "LANG_LOCAL_NAMES"
+}
+
+# Get the English name of a language: $code
+get_lang_en_name() {
+    _get_lang_name "$1" "LANG_EN_NAMES"
 }
 
 # Obtain the version of the Dash docset: $docset_path
