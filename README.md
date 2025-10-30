@@ -15,23 +15,22 @@ Generate [Dash](https://kapeli.com/dash) docsets for the official [PHP Manual](h
 - **Cross-platform support** (macOS and Linux).
 - **Customizable output directory** and **verbose mode** for debugging.
 
-## Installing the generated PHP docsets
+## Installing pre-generated PHP docsets
 
-You can directly install the generated PHP docsets, which update automatically and very promptly.
+You can install the prebuilt and automatically updated PHP docsets directly in [Dash](https://kapeli.com/dash) or [Zeal](https://zealdocs.org) by adding the following feed URLs:
 
-### [Dash](https://kapeli.com/dash) (macOS)
-
-1. Open **Dash** and navigate to `Settings...` > `Downloads`.
-2. In the left panel, select **"User Contributed"**.
-3. In the search box on the right, type `php`, then choose and install your desired PHP docset.
-
-> ⚠️ The **English PHP docset** isn’t available through the steps above. Instead, simply [click here](https://elfsundae.github.io/dash-php/feed/?lang=en) to install it.
-
-### [Zeal](https://zealdocs.org) (Windows / Linux)
-
-1. Open **Zeal** and navigate to `Tools` > `Docsets`.
-2. Click the **"Add feed"** button in the lower-left corner.
-3. Copy the Feed URL from the [Release page](https://github.com/ElfSundae/dash-php/releases/tag/docsets) and paste it here to add the desired PHP docset.
+| Docset                     | Feed URL                                                                                         | Install                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| PHP (English)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_English.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=en "Add PHP (English) docset feed to Dash")                 |
+| PHP (Español)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Spanish.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=es "Add PHP (Español) docset feed to Dash")                 |
+| PHP (Français)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_French.xml>               | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=fr "Add PHP (Français) docset feed to Dash")                |
+| PHP (Italiano)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Italian.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=it "Add PHP (Italiano) docset feed to Dash")                |
+| PHP (日本語)               | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Japanese.xml>             | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=ja "Add PHP (日本語) docset feed to Dash")                  |
+| PHP (Português Brasileiro) | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Brazilian_Portuguese.xml> | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=pt_BR "Add PHP (Português Brasileiro) docset feed to Dash") |
+| PHP (Русский)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Russian.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=ru "Add PHP (Русский) docset feed to Dash")                 |
+| PHP (Türkçe)               | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Turkish.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=tr "Add PHP (Türkçe) docset feed to Dash")                  |
+| PHP (Українська)           | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Ukrainian.xml>            | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=uk "Add PHP (Українська) docset feed to Dash")              |
+| PHP (简体中文)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Simplified_Chinese.xml>   | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=zh "Add PHP (简体中文) docset feed to Dash")                |
 
 ## Usage
 
