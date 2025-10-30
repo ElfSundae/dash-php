@@ -83,12 +83,12 @@ clone_or_update() {
         if [ -d "$path" ]; then
             (
                 cd "$path"
-                run git fetch origin
+                run git fetch --depth=1 origin
                 run git reset --hard origin/$(git symbolic-ref --short HEAD)
                 run git clean -dxfq
             )
         else
-            run git clone "$repo" "$path"
+            run git clone --depth=1 "$repo" "$path"
         fi
     )
 }
