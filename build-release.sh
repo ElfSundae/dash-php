@@ -77,6 +77,8 @@ EOF
 | 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") |"$'\n'
 }
 
+require_command md5sum tar
+
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
 
