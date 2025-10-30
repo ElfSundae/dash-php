@@ -73,8 +73,8 @@ EOF
 
     echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_FILES"
     echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_FILES"
-    DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \`${version}\` | \
-<${feed_url}> | [Install in Dash](${install_url}) |"$'\n'
+    DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \`${version}\` | <${feed_url}> \
+| 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") |"$'\n'
 }
 
 rm -rf "$OUTPUT"
