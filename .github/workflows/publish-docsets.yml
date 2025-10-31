@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  publish-docset:
+  publish-docsets:
     runs-on: ubuntu-latest
 
     permissions:
