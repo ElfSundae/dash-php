@@ -228,10 +228,10 @@ index 86d9c44..b959d28 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 9c26c31..9ca86bd 100644
+index 9c26c31..f0c1bfa 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-@@ -17,6 +17,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+@@ -17,6 +17,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
          parent::__destruct();
      }
  
@@ -239,15 +239,17 @@ index 9c26c31..9ca86bd 100644
 +    {
 +        $sdesc = $this->indexes[$id]['sdesc'] ?? '';
 +        $ldesc = $this->indexes[$id]['ldesc'] ?? '';
-+        return ($sdesc && $ldesc && $sdesc !== $ldesc)
-+            ? "$sdesc — $ldesc"
-+            : Format::getShortDescription($id);
++        if ($sdesc && $ldesc && $sdesc !== $ldesc) {
++            return "$sdesc — $ldesc";
++        }
++
++        return Format::getShortDescription($id) ?? '';
 +    }
 +
      protected function headerNav($id): string
      {
          // https://feathericons.com search
-@@ -78,22 +87,20 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+@@ -78,22 +89,20 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
  
      protected function headerCrumbs($id): string
      {
@@ -274,7 +276,7 @@ index 9c26c31..9ca86bd 100644
                  {$upLink}
                  <li>{$title}</li>
                </ul>
-@@ -102,14 +109,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+@@ -102,14 +111,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
      }
  
      public function header($id) {
