@@ -1,8 +1,8 @@
 diff --git a/phpdotnet/phd/Package/Generic/XHTML.php b/phpdotnet/phd/Package/Generic/XHTML.php
-index ad9dc32..e6da8a5 100644
+index 8c419e4..a4b5b75 100644
 --- a/phpdotnet/phd/Package/Generic/XHTML.php
 +++ b/phpdotnet/phd/Package/Generic/XHTML.php
-@@ -679,7 +679,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
+@@ -689,7 +689,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
              $basename = basename($css);
              $dest = md5(substr($css, 0, -strlen($basename))) . '-' . $basename;
              if (@copy($css, $stylesDir . $dest)) {
@@ -19,7 +19,7 @@ index ad9dc32..e6da8a5 100644
                  trigger_error(vsprintf('Impossible to copy the %s file.', [$css]), E_USER_WARNING);
              }
 diff --git a/phpdotnet/phd/Package/PHP/CHM.php b/phpdotnet/phd/Package/PHP/CHM.php
-index f172f26..fb9dd5e 100644
+index 86d9c44..b959d28 100644
 --- a/phpdotnet/phd/Package/PHP/CHM.php
 +++ b/phpdotnet/phd/Package/PHP/CHM.php
 @@ -15,176 +15,176 @@ class Package_PHP_CHM extends Package_PHP_ChunkedXHTML
@@ -228,33 +228,32 @@ index f172f26..fb9dd5e 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 0440afa..cc716b6 100644
+index 9c26c31..9ca86bd 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-@@ -16,14 +16,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+@@ -17,6 +17,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+         parent::__destruct();
      }
  
-     public function header($id) {
--        $title = Format::getLongDescription($id);
++    protected function pageTitle($id): string
++    {
 +        $sdesc = $this->indexes[$id]['sdesc'] ?? '';
 +        $ldesc = $this->indexes[$id]['ldesc'] ?? '';
-+        $title = ($sdesc && $ldesc && $sdesc !== $ldesc) ? "$sdesc — $ldesc" : Format::getShortDescription($id);
-+        $onlinePage = 'https://www.php.net/manual/'.$this->config->language.'/'.$id.'.php';
-         static $cssLinks = null;
-         if ($cssLinks === null) {
-             $cssLinks = $this->createCSSLinks();
-         }
-         $header = <<<HEADER
- <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
--<html>
-+<html><!-- Online page at $onlinePage -->
-  <head>
-   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-   <title>$title</title>
-@@ -46,14 +49,13 @@ HEADER;
-             );
-             $nextLink = "<li style=\"float: right;\"><a href=\"{$next["href"]}\">{$next["desc"]} »</a></li>";
-         }
++        return ($sdesc && $ldesc && $sdesc !== $ldesc)
++            ? "$sdesc — $ldesc"
++            : Format::getShortDescription($id);
++    }
++
+     protected function headerNav($id): string
+     {
+         // https://feathericons.com search
+@@ -78,22 +87,20 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+ 
+     protected function headerCrumbs($id): string
+     {
+-        $title = Format::getLongDescription($id);
++        $title = $this->pageTitle($id);
+         $upLink = '';
 -        if ($parentId = Format::getParent($id)) {
 +        $parentId = $id;
 +        while ($parentId = Format::getParent($parentId)) {
@@ -268,20 +267,36 @@ index 0440afa..cc716b6 100644
 +            $upLink = "<li><a href=\"{$up["href"]}\">{$up["desc"]}</a></li>" . $upLink;
          }
  
-         $nav = <<<NAV
-@@ -67,7 +69,6 @@ HEADER;
- </div>
- <div id="breadcrumbs" class="clearfix">
-   <ul class="breadcrumbs-container">
--    <li><a href="index.html">PHP Manual</a></li>
-     {$upLink}
-     <li>{$title}</li>
-   </ul>
+         return <<<HTML
+             <div id="breadcrumbs" class="clearfix">
+               <ul class="breadcrumbs-container">
+-                <li><a href="index.html">PHP Manual</a></li>
+                 {$upLink}
+                 <li>{$title}</li>
+               </ul>
+@@ -102,14 +109,15 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+     }
+ 
+     public function header($id) {
+-        $title = Format::getLongDescription($id);
++        $title = $this->pageTitle($id);
++        $onlinePage = 'https://www.php.net/manual/'.$this->config->language.'/'.$id.'.php';
+         static $cssLinks = null;
+         if ($cssLinks === null) {
+             $cssLinks = $this->createCSSLinks();
+         }
+         $header = <<<HTML
+             <!DOCTYPE HTML>
+-            <html>
++            <html><!-- Online page at $onlinePage -->
+              <head>
+               <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+               <style>
 diff --git a/phpdotnet/phd/Package/PHP/EnhancedCHM.php b/phpdotnet/phd/Package/PHP/EnhancedCHM.php
-index 9be101c..9cbbcaf 100644
+index 25532a1..04f5664 100644
 --- a/phpdotnet/phd/Package/PHP/EnhancedCHM.php
 +++ b/phpdotnet/phd/Package/PHP/EnhancedCHM.php
-@@ -74,7 +74,7 @@ class Package_PHP_EnhancedCHM extends Package_PHP_CHM
+@@ -75,7 +75,7 @@ class Package_PHP_EnhancedCHM extends Package_PHP_CHM
                  $this->outputHandler->v('Preparing usernotes.', VERBOSE_MESSAGES);
  
                  // Decompress the 'all' file into single files - one file per sectionid.
