@@ -1,0 +1,35 @@
+name: Update Dash User Contributions
+
+on:
+  schedule:
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+jobs:
+  update-dash-user-contributions:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sqlite3 libxml2-utils tar jq
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Configure bot identity (global)
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Update Dash User Contributions
+        run: ./update-dash-user-contributions.sh
+        env:
+          FORK_REPO: ${{ github.repository_owner }}/Dash-User-Contributions
+          GH_TOKEN: ${{ secrets.DASH_USER_CONTRIBUTIONS_PAT }}
