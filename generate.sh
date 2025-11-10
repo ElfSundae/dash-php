@@ -84,7 +84,7 @@ clone_or_update() {
             (
                 cd "$path"
                 run git fetch --depth=1 origin
-                run git reset --hard origin/$(git symbolic-ref --short HEAD)
+                run git reset --hard $(git symbolic-ref --short refs/remotes/origin/HEAD)
                 run git clean -dxfq
             )
         else
