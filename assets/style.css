@@ -5,6 +5,11 @@ body {
     color: var(--background-text-color);
 }
 
+/* Fix "Failed to load resource" */
+html {
+    background-image: url('../images/bg-texture-00.svg') !important;
+}
+
 /* Fix padding of example code blocks for PHP 8.3+ rendering */
 /* See: https://github.com/php/web-php/pull/1501 */
 .docs .example-contents > .phpcode > pre > code {
