@@ -7,7 +7,7 @@ body {
 
 /* Fix padding of example code blocks for PHP 8.3+ rendering */
 /* See: https://github.com/php/web-php/pull/1501 */
-.docs .example-contents > .phpcode > pre {
+.docs .example-contents > .phpcode > pre > code {
     padding: .75rem;
 }
 
