@@ -357,7 +357,7 @@ generate_docset() {
 
     local root="$BUILD/php-$format"
     mv "$fonts" "$root/res/"
-    cp "$PHPDOC/web-php/favicon.ico" "$root/res/"
+    cp "$PHPDOC/web-php"/favicon* "$root/res/"
     cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
 
     create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"

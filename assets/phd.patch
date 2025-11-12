@@ -228,7 +228,7 @@ index 86d9c44..b959d28 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 9c26c31..f0c1bfa 100644
+index 9c26c31..1e7945a 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 @@ -17,6 +17,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
@@ -294,6 +294,18 @@ index 9c26c31..f0c1bfa 100644
               <head>
                <meta http-equiv="content-type" content="text/html; charset=UTF-8">
                <style>
+@@ -137,6 +147,11 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+               </style>
+               <title>$title</title>
+               {$cssLinks}
++              <link rel="icon" type="image/svg+xml" sizes="any" href="favicon.svg?v=2">
++              <link rel="icon" type="image/png" sizes="196x196" href="favicon-196x196.png?v=2">
++              <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png?v=2">
++              <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png?v=2">
++              <link rel="shortcut icon" href="favicon.ico?v=2">
+              </head>
+              <body class="docs">
+         HTML;
 diff --git a/phpdotnet/phd/Package/PHP/EnhancedCHM.php b/phpdotnet/phd/Package/PHP/EnhancedCHM.php
 index 25532a1..04f5664 100644
 --- a/phpdotnet/phd/Package/PHP/EnhancedCHM.php
