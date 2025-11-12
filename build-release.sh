@@ -22,6 +22,7 @@ build_release() {
     local docset_filename="${docset_name}.docset"
     local docset="$OUTPUT/$docset_filename"
     local docset_archive="${docset_name}.tgz"
+    local docset_archive_path="$OUTPUT/$docset_archive"
     local docset_archive_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${docset_archive}"
 
     local lang_en_name=$(get_lang_en_name "$lang")
@@ -33,10 +34,31 @@ build_release() {
 
     echo "===== Build Release Assets for $docset_filename ====="
 
-    "$ROOT/generate.sh" "$lang" --output "$OUTPUT" || {
-        msg_error "Failed to generate $docset_filename"
-        return 0
-    }
+    if ! "$ROOT/generate.sh" "$lang" --output "$OUTPUT"; then
+        msg_main "Try to download existing docset: ${docset_archive_url}..."
+        if ! curl -fsL -o "$docset_archive_path" "$docset_archive_url"; then
+            msg_error "Failed to download existing docset: $docset_archive"
+            return 0
+        fi
+
+        msg_main "Unarchiving ${docset_archive}..."
+        tar -xf "$docset_archive_path" -C "$OUTPUT" || {
+            msg_error "Failed to unarchive $docset_archive"
+            return 0
+        }
+    fi
+
+    if [[ ! -f "$docset_archive_path" ]]; then
+        msg_main "Archiving ${docset_filename}..."
+        (
+            cd "$OUTPUT"
+            tar --exclude='.DS_Store' --exclude='optimizedIndex.dsidx' -czf "$docset_archive" "$docset_filename"
+        ) || {
+            msg_error "Failed to archive $docset_filename"
+            reutrn 0
+        }
+        msg_sub "Archived $docset_filename to $docset_archive"
+    fi
 
     docset_bundle_name=$(get_docset_bundle_name "$docset")
     if [[ -z "$docset_bundle_name" ]]; then
@@ -53,17 +75,6 @@ build_release() {
     fi
     msg_sub "$docset_filename version: $version"
 
-    msg_main "Archiving ${docset_filename}..."
-    (
-        cd "$OUTPUT"
-        rm -rf "$docset_archive"
-        tar --exclude='.DS_Store' --exclude='optimizedIndex.dsidx' -czf "$docset_archive" "$docset_filename"
-    ) || {
-        msg_error "Failed to archive $docset_filename"
-        reutrn 0
-    }
-    msg_sub "Archived $docset_filename to $docset_archive"
-
     cat <<EOF | tee "${OUTPUT}/${feed_filename}"
 <entry>
     <version>${version}</version>
@@ -77,7 +88,7 @@ EOF
 | 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") |"$'\n'
 }
 
-require_command md5sum tar
+require_command curl md5sum tar
 
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
