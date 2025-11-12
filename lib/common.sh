@@ -95,16 +95,26 @@ get_lang_en_name() {
 # Return empty string if failed, otherwise the version.
 get_docset_version() {
     local docset="$1"
-    local pubdate indexes hash
+    local phpver hash
 
-    pubdate=$(xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
-        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null | xargs || true)
-    [[ -n "$pubdate" ]] || { echo ""; return 0; }
+    # Get the latest migration file
+    local migration
+    migration=$(
+        {
+            find "$docset/Contents/Resources/Documents" \
+                -maxdepth 1 -type f -name 'migration*.html' \
+                | grep -E '/migration[0-9]+\.html$' \
+                | sort --version-sort \
+                | tail -n 1
+        } 2>/dev/null || true
+    )
+    [[ -n "$migration" ]] || { echo ""; return 0; }
 
-    indexes=$(sqlite3 -noheader "$docset/Contents/Resources/docSet.dsidx" \
-        'SELECT COUNT(*) FROM searchIndex;' 2>/dev/null || true)
-    [[ -n "$indexes" ]] || { echo ""; return 0; }
+    # Get the PHP version for the doc
+    phpver=$(sed -E -n 's/.*PHP ([0-9]+\.[0-9]+)(\.x)?<\/title>/\1/p' "$migration" 2>/dev/null || true)
+    [[ -n "$phpver" ]] || { echo ""; return 0; }
 
+    # Calc the files hash
     # The regex matches `uniqid()`.html files, like `PHP_es.docset/Contents/Resources/Documents/68fca58a0edb6.html`
     hash=$(
         (
@@ -116,7 +126,7 @@ get_docset_version() {
     )
     [[ -n "$hash" ]] || { echo ""; return 0; }
 
-    echo "/${pubdate}_${indexes}_${hash}"
+    echo "/${phpver}_${hash}"
 }
 
 # Obtain the CFBundleName of the Dash docset: $docset_path
