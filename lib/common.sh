@@ -111,7 +111,7 @@ get_docset_version() {
     [[ -n "$migration" ]] || { echo ""; return 0; }
 
     # Get the PHP version for the doc
-    phpver=$(sed -E -n 's/.*PHP ([0-9]+\.[0-9]+)(\.x)?<\/title>/\1/p' "$migration" 2>/dev/null || true)
+    phpver=$(sed -E -n 's/.*PHP ([0-9]+\.[0-9]+)(\.x)?[^<]*<\/title>/\1/p' "$migration" 2>/dev/null || true)
     [[ -n "$phpver" ]] || { echo ""; return 0; }
 
     # Calc the files hash
