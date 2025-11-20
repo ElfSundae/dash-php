@@ -75,7 +75,7 @@ build_release() {
     fi
     msg_sub "$docset_filename version: $version"
 
-    cat <<EOF | tee "${OUTPUT}/${feed_filename}"
+    tee "${OUTPUT}/${feed_filename}" <<EOF
 <entry>
     <version>${version}</version>
     <url>${docset_archive_url}</url>
