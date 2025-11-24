@@ -1,10 +1,10 @@
-name: Test
+name: Tests
 
 on:
-  pull_request:
   push:
     branches:
       - master
+  pull_request:
   workflow_dispatch:
     inputs:
       run_full_tests:
@@ -16,7 +16,7 @@ env:
   RUN_FULL_TESTS: ${{ github.event.inputs.run_full_tests || 'false' }}
 
 jobs:
-  test:
+  tests:
     runs-on: ${{ matrix.os }}
 
     strategy:
