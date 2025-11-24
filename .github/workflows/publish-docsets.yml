@@ -5,6 +5,9 @@ on:
     - cron: "0 0 */2 * *"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}
+
 jobs:
   publish-docsets:
     runs-on: ubuntu-latest
