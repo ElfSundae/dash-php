@@ -139,3 +139,15 @@ get_docset_bundle_name() {
         return 0
     }
 }
+
+# Obtain the build date of the Dash docset: $docset_path
+# Return empty string if failed, otherwise the build date string.
+get_docset_build_date() {
+    local docset="$1"
+    xmllint --html --xpath 'string(//div[@class="pubdate"][1])' \
+        "$docset/Contents/Resources/Documents/index.html" 2>/dev/null \
+        | xargs || {
+            echo ""
+            return 0
+        }
+}

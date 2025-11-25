@@ -30,8 +30,6 @@ build_release() {
     local feed_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${feed_filename}"
     local install_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
 
-    local docset_bundle_name version
-
     echo "===== Build Release Assets for $docset_filename ====="
 
     if ! "$ROOT/generate.sh" "$lang" --output "$OUTPUT"; then
@@ -60,6 +58,7 @@ build_release() {
         msg_sub "Archived $docset_filename to $docset_archive"
     fi
 
+    local docset_bundle_name
     docset_bundle_name=$(get_docset_bundle_name "$docset")
     if [[ -z "$docset_bundle_name" ]]; then
         msg_error "Failed to obtain docset bundle name."
@@ -67,7 +66,16 @@ build_release() {
     fi
     msg_main "$docset_filename bundle name: $docset_bundle_name"
 
+    local docset_build_date
+    docset_build_date=$(get_docset_build_date "$docset")
+    if [[ -z "$docset_build_date" ]]; then
+        msg_error "Failed to obtain docset build date."
+        return 0
+    fi
+    msg_main "$docset_filename build date: $docset_build_date"
+
     msg_main "Obtaining the docset version..."
+    local version
     version=$(get_docset_version "$docset")
     if [[ -z "$version" ]]; then
         msg_error "Failed to obtain the docset version."
@@ -84,8 +92,11 @@ EOF
 
     echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_ASSETS_FILE"
     echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_ASSETS_FILE"
-    DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \`${version}\` | <${feed_url}> \
-| 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") |"$'\n'
+
+    DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \
+${docset_build_date} | \`${version}\` | <${feed_url}> | \
+📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") | \
+"$'\n'
 }
 
 require_command curl md5sum tar
@@ -105,7 +116,7 @@ fi
 cat <<EOF > "$RELEASE_BODY_FILE"
 This release provides automatically updated Dash docsets for the [PHP Manual](https://www.php.net/manual), available in multiple languages.
 
-| Docset | Version | Feed URL | Install |
-|--------|---------|----------|---------|
+| Docset | Build Date | Version | Feed URL | Install |
+|--------|------------|---------|----------|---------|
 $DOCSET_VERSIONS_ROWS
 EOF
