@@ -29,7 +29,7 @@ build_release() {
 
     local lang_en_name=$(get_lang_en_name "$lang")
     local feed_filename="PHP_-_${lang_en_name// /_}.xml"
-    local feed_url="https://elfsundae.github.io/dash-php/feed/${feed_filename}"
+    local feed_url="https://elfsundae.github.io/dash-php/feeds/${feed_filename}"
     local install_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
 
     echo "===== Build Release Assets for $docset_filename ====="
@@ -102,8 +102,8 @@ ${docset_build_date} | \`${version}\` | <${feed_url}> | \
 
     msg_main "Generating site files..."
 
-    mkdir -p "$SITE/feed"
-    cp "${OUTPUT}/${feed_filename}" "$SITE/feed/"
+    mkdir -p "$SITE/feeds"
+    cp "${OUTPUT}/${feed_filename}" "$SITE/feeds/"
 
     mkdir -p "$SITE/shields"
     jq --indent 4 -n \
