@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build release assets for all PHP docsets.
+# Build Release Assets for all PHP docsets.
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 source "$ROOT/lib/common.sh"
@@ -9,8 +9,8 @@ source "$ROOT/lib/common.sh"
 OUTPUT_DIR="release"
 OUTPUT="$ROOT/$OUTPUT_DIR"
 
-RELEASE_BODY="$OUTPUT/release-body.md"
-RELEASE_FILES="$OUTPUT/release-files.txt"
+RELEASE_BODY_FILE="$OUTPUT/body.md"
+RELEASE_ASSETS_FILE="$OUTPUT/assets.txt"
 
 # Store docset versions table rows for release body
 DOCSET_VERSIONS_ROWS=""
@@ -82,8 +82,8 @@ build_release() {
 </entry>
 EOF
 
-    echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_FILES"
-    echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_FILES"
+    echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_ASSETS_FILE"
+    echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_ASSETS_FILE"
     DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \`${version}\` | <${feed_url}> \
 | 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") |"$'\n'
 }
@@ -97,12 +97,12 @@ for lang in "${LANG_CODES[@]}"; do
     build_release "$lang"
 done
 
-if [[ ! -s "$RELEASE_FILES" ]]; then
+if [[ ! -s "$RELEASE_ASSETS_FILE" ]]; then
     msg_error "Failed to build any docset release assets."
     exit 10
 fi
 
-cat <<EOF > "$RELEASE_BODY"
+cat <<EOF > "$RELEASE_BODY_FILE"
 This release provides automatically updated Dash docsets for the [PHP Manual](https://www.php.net/manual), available in multiple languages.
 
 | Docset | Version | Feed URL | Install |
