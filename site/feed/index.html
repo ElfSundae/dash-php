@@ -66,10 +66,13 @@
         'zh': 'Simplified Chinese'
       };
 
-      // Read lang param (default 'en')
+      // Read lang param
       const params = new URLSearchParams(location.search);
+      let lang = (params.get('lang') || '').trim();
+      if (lang === '') {
+        return;
+      }
 
-      let lang = (params.get('lang') || 'en').trim();
       lang = lang.includes('_')
         ? lang.replace(/^([^_]+)_([^_]+)$/, (_, a, b) => a.toLowerCase() + '_' + b.toUpperCase())
         : lang.toLowerCase();
