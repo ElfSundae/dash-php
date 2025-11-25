@@ -88,6 +88,7 @@ build_release() {
     tee "${OUTPUT}/${feed_filename}" <<EOF
 <entry>
     <version>${version}</version>
+    <buildDate>${docset_build_date}</buildDate>
     <url>${docset_archive_url}</url>
 </entry>
 EOF
