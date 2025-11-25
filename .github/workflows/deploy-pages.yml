@@ -47,10 +47,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
       - name: Download site artifact
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v5
         with:
           name: site
           path: _site
+          github-token: ${{ github.token }}
           run-id: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || steps.get_run.outputs.run_id }}
 
       - name: Update Pages content
