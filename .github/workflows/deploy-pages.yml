@@ -43,6 +43,8 @@ jobs:
             --json databaseId,conclusion \
             --jq 'map(select(.conclusion=="success")) | first.databaseId')
           echo "run_id=$run_id" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Download site artifact
         uses: actions/download-artifact@v6
