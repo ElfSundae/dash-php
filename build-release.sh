@@ -106,20 +106,11 @@ ${docset_build_date} | \`${version}\` | <${feed_url}> | \
     mkdir -p "$SITE/feeds"
     cp "${OUTPUT}/${feed_filename}" "$SITE/feeds/"
 
-    mkdir -p "$SITE/shields"
-    jq --indent 4 -n \
-        --arg build_date "$docset_build_date" \
-        --arg version "$version" \
-        '{
-            "schemaVersion": 1,
-            "label": $build_date,
-            "message": $version,
-            "color": "blue",
-            "labelColor": "grey"
-        }' > "$SITE/shields/${docset_name}.json"
+    mkdir -p "$SITE/badges"
+    badge "$docset_build_date" "$version" blue grey > "$SITE/badges/${docset_name}.svg"
 }
 
-require_command curl md5sum tar jq
+require_command curl md5sum tar badge
 
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
