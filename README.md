@@ -19,18 +19,18 @@ Generate [Dash](https://kapeli.com/dash) docsets for the official [PHP Manual](h
 
 You can install the prebuilt and automatically updated PHP docsets directly in [Dash](https://kapeli.com/dash) or [Zeal](https://zealdocs.org) by adding the following feed URLs:
 
-| Docset                     | Version                       | Feed URL                                                                   | Install                          |
-| -------------------------- | ----------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
-| PHP (English)              | ![Version Badge][badge_en]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_English.xml>              | 📚 [Add to Dash][install_en]    |
-| PHP (Español)              | ![Version Badge][badge_es]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Spanish.xml>              | 📚 [Add to Dash][install_es]    |
-| PHP (Français)             | ![Version Badge][badge_fr]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_French.xml>               | 📚 [Add to Dash][install_fr]    |
-| PHP (Italiano)             | ![Version Badge][badge_it]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Italian.xml>              | 📚 [Add to Dash][install_it]    |
-| PHP (日本語)               | ![Version Badge][badge_ja]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Japanese.xml>             | 📚 [Add to Dash][install_ja]    |
-| PHP (Português Brasileiro) | ![Version Badge][badge_pt_BR] | <https://elfsundae.github.io/dash-php/feed/PHP_-_Brazilian_Portuguese.xml> | 📚 [Add to Dash][install_pt_BR] |
-| PHP (Русский)              | ![Version Badge][badge_ru]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Russian.xml>              | 📚 [Add to Dash][install_ru]    |
-| PHP (Türkçe)               | ![Version Badge][badge_tr]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Turkish.xml>              | 📚 [Add to Dash][install_tr]    |
-| PHP (Українська)           | ![Version Badge][badge_uk]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Ukrainian.xml>            | 📚 [Add to Dash][install_uk]    |
-| PHP (简体中文)             | ![Version Badge][badge_zh]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Simplified_Chinese.xml>   | 📚 [Add to Dash][install_zh]    |
+| Docset                                                                       | Feed URL                                                                   | Install                          |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
+| PHP (English)<br>[![Version Badge][badge_en]][install_en]                    | <https://elfsundae.github.io/dash-php/feed/PHP_-_English.xml>              | 📚 [Add to Dash][install_en]    |
+| PHP (Español)<br>[![Version Badge][badge_es]][install_es]                    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Spanish.xml>              | 📚 [Add to Dash][install_es]    |
+| PHP (Français)<br>[![Version Badge][badge_fr]][install_fr]                   | <https://elfsundae.github.io/dash-php/feed/PHP_-_French.xml>               | 📚 [Add to Dash][install_fr]    |
+| PHP (Italiano)<br>[![Version Badge][badge_it]][install_it]                   | <https://elfsundae.github.io/dash-php/feed/PHP_-_Italian.xml>              | 📚 [Add to Dash][install_it]    |
+| PHP (日本語)<br>[![Version Badge][badge_ja]][install_ja]                     | <https://elfsundae.github.io/dash-php/feed/PHP_-_Japanese.xml>             | 📚 [Add to Dash][install_ja]    |
+| PHP (Português Brasileiro)<br>[![Version Badge][badge_pt_BR]][install_pt_BR] | <https://elfsundae.github.io/dash-php/feed/PHP_-_Brazilian_Portuguese.xml> | 📚 [Add to Dash][install_pt_BR] |
+| PHP (Русский)<br>[![Version Badge][badge_ru]][install_ru]                    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Russian.xml>              | 📚 [Add to Dash][install_ru]    |
+| PHP (Türkçe)<br>[![Version Badge][badge_tr]][install_tr]                     | <https://elfsundae.github.io/dash-php/feed/PHP_-_Turkish.xml>              | 📚 [Add to Dash][install_tr]    |
+| PHP (Українська)<br>[![Version Badge][badge_uk]][install_uk]                 | <https://elfsundae.github.io/dash-php/feed/PHP_-_Ukrainian.xml>            | 📚 [Add to Dash][install_uk]    |
+| PHP (简体中文)<br>[![Version Badge][badge_zh]][install_zh]                   | <https://elfsundae.github.io/dash-php/feed/PHP_-_Simplified_Chinese.xml>   | 📚 [Add to Dash][install_zh]    |
 
 [badge_en]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_en.json
 [badge_es]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_es.json
