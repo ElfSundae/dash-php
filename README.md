@@ -19,18 +19,39 @@ Generate [Dash](https://kapeli.com/dash) docsets for the official [PHP Manual](h
 
 You can install the prebuilt and automatically updated PHP docsets directly in [Dash](https://kapeli.com/dash) or [Zeal](https://zealdocs.org) by adding the following feed URLs:
 
-| Docset                     | Feed URL                                                                                         | Install                                                                                                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| PHP (English)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_English.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=en "Add PHP (English) docset feed to Dash")                 |
-| PHP (Español)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Spanish.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=es "Add PHP (Español) docset feed to Dash")                 |
-| PHP (Français)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_French.xml>               | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=fr "Add PHP (Français) docset feed to Dash")                |
-| PHP (Italiano)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Italian.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=it "Add PHP (Italiano) docset feed to Dash")                |
-| PHP (日本語)               | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Japanese.xml>             | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=ja "Add PHP (日本語) docset feed to Dash")                  |
-| PHP (Português Brasileiro) | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Brazilian_Portuguese.xml> | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=pt_BR "Add PHP (Português Brasileiro) docset feed to Dash") |
-| PHP (Русский)              | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Russian.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=ru "Add PHP (Русский) docset feed to Dash")                 |
-| PHP (Türkçe)               | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Turkish.xml>              | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=tr "Add PHP (Türkçe) docset feed to Dash")                  |
-| PHP (Українська)           | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Ukrainian.xml>            | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=uk "Add PHP (Українська) docset feed to Dash")              |
-| PHP (简体中文)             | <https://github.com/ElfSundae/dash-php/releases/download/docsets/PHP_-_Simplified_Chinese.xml>   | 📚 [Add to Dash](https://elfsundae.github.io/dash-php/feed/?lang=zh "Add PHP (简体中文) docset feed to Dash")                |
+| Docset                     | Version                       | Feed URL                                                                   | Install                          |
+| -------------------------- | ----------------------------- | -------------------------------------------------------------------------- | -------------------------------- |
+| PHP (English)              | ![Version Badge][badge_en]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_English.xml>              | 📚 [Add to Dash][install_en]    |
+| PHP (Español)              | ![Version Badge][badge_es]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Spanish.xml>              | 📚 [Add to Dash][install_es]    |
+| PHP (Français)             | ![Version Badge][badge_fr]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_French.xml>               | 📚 [Add to Dash][install_fr]    |
+| PHP (Italiano)             | ![Version Badge][badge_it]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Italian.xml>              | 📚 [Add to Dash][install_it]    |
+| PHP (日本語)               | ![Version Badge][badge_ja]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Japanese.xml>             | 📚 [Add to Dash][install_ja]    |
+| PHP (Português Brasileiro) | ![Version Badge][badge_pt_BR] | <https://elfsundae.github.io/dash-php/feed/PHP_-_Brazilian_Portuguese.xml> | 📚 [Add to Dash][install_pt_BR] |
+| PHP (Русский)              | ![Version Badge][badge_ru]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Russian.xml>              | 📚 [Add to Dash][install_ru]    |
+| PHP (Türkçe)               | ![Version Badge][badge_tr]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Turkish.xml>              | 📚 [Add to Dash][install_tr]    |
+| PHP (Українська)           | ![Version Badge][badge_uk]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Ukrainian.xml>            | 📚 [Add to Dash][install_uk]    |
+| PHP (简体中文)             | ![Version Badge][badge_zh]    | <https://elfsundae.github.io/dash-php/feed/PHP_-_Simplified_Chinese.xml>   | 📚 [Add to Dash][install_zh]    |
+
+[badge_en]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_en.json
+[badge_es]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_es.json
+[badge_fr]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_fr.json
+[badge_it]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_it.json
+[badge_ja]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_ja.json
+[badge_pt_BR]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_pt_BR.json
+[badge_ru]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_ru.json
+[badge_tr]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_tr.json
+[badge_uk]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_uk.json
+[badge_zh]: https://img.shields.io/endpoint?url=https%3A%2F%2Felfsundae.github.io%2Fdash-php%2Fshields%2FPHP_zh.json
+[install_en]: https://elfsundae.github.io/dash-php/feed/?lang=en "Add PHP (English) docset feed to Dash"
+[install_es]: https://elfsundae.github.io/dash-php/feed/?lang=es "Add PHP (Español) docset feed to Dash"
+[install_fr]: https://elfsundae.github.io/dash-php/feed/?lang=fr "Add PHP (Français) docset feed to Dash"
+[install_it]: https://elfsundae.github.io/dash-php/feed/?lang=it "Add PHP (Italiano) docset feed to Dash"
+[install_ja]: https://elfsundae.github.io/dash-php/feed/?lang=ja "Add PHP (日本語) docset feed to Dash"
+[install_pt_BR]: https://elfsundae.github.io/dash-php/feed/?lang=pt_BR "Add PHP (Português Brasileiro) docset feed to Dash"
+[install_ru]: https://elfsundae.github.io/dash-php/feed/?lang=ru "Add PHP (Русский) docset feed to Dash"
+[install_tr]: https://elfsundae.github.io/dash-php/feed/?lang=tr "Add PHP (Türkçe) docset feed to Dash"
+[install_uk]: https://elfsundae.github.io/dash-php/feed/?lang=uk "Add PHP (Українська) docset feed to Dash"
+[install_zh]: https://elfsundae.github.io/dash-php/feed/?lang=zh "Add PHP (简体中文) docset feed to Dash"
 
 ## Usage
 

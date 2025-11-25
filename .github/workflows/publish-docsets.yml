@@ -1,4 +1,4 @@
-name: Publish PHP Dash Docsets
+name: Publish Docsets
 
 on:
   schedule:
@@ -19,7 +19,7 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y sqlite3 libxml2-utils tar
+          sudo apt-get install -y sqlite3 libxml2-utils tar jq
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -29,7 +29,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
 
-      - name: Build release assets
+      - name: Build Release assets
         id: build
         run: |
           ./build-release.sh
@@ -48,3 +48,9 @@ jobs:
           files: ${{ steps.build.outputs.assets }}
           preserve_order: true
           make_latest: true
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: site
+          path: _site

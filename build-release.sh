@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Build Release Assets for all PHP docsets.
+# Build Release assets for all PHP docsets.
+# Generate partial site files.
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 source "$ROOT/lib/common.sh"
 
 OUTPUT_DIR="release"
 OUTPUT="$ROOT/$OUTPUT_DIR"
+SITE="$ROOT/_site"
 
 RELEASE_BODY_FILE="$OUTPUT/body.md"
 RELEASE_ASSETS_FILE="$OUTPUT/assets.txt"
@@ -27,7 +29,7 @@ build_release() {
 
     local lang_en_name=$(get_lang_en_name "$lang")
     local feed_filename="PHP_-_${lang_en_name// /_}.xml"
-    local feed_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${feed_filename}"
+    local feed_url="https://elfsundae.github.io/dash-php/feed/${feed_filename}"
     local install_url="https://elfsundae.github.io/dash-php/feed/?lang=${lang}"
 
     echo "===== Build Release Assets for $docset_filename ====="
@@ -91,18 +93,38 @@ build_release() {
 EOF
 
     echo "$OUTPUT_DIR/${docset_archive}" >> "$RELEASE_ASSETS_FILE"
-    echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_ASSETS_FILE"
+    # echo "$OUTPUT_DIR/${feed_filename}" >> "$RELEASE_ASSETS_FILE"
 
     DOCSET_VERSIONS_ROWS+="| ${docset_bundle_name} | \
 ${docset_build_date} | \`${version}\` | <${feed_url}> | \
 📚 [Add to Dash](${install_url} \"Add ${docset_bundle_name} docset feed to Dash\") | \
 "$'\n'
+
+    msg_main "Generating site files..."
+
+    mkdir -p "$SITE/feed"
+    cp "${OUTPUT}/${feed_filename}" "$SITE/feed/"
+
+    mkdir -p "$SITE/shields"
+    jq --indent 4 -n \
+        --arg build_date "$docset_build_date" \
+        --arg version "$version" \
+        '{
+            "schemaVersion": 1,
+            "label": $build_date,
+            "message": $version,
+            "color": "blue",
+            "labelColor": "grey"
+        }' > "$SITE/shields/${docset_name}.json"
 }
 
-require_command curl md5sum tar
+require_command curl md5sum tar jq
 
 rm -rf "$OUTPUT"
 mkdir -p "$OUTPUT"
+
+rm -rf "$SITE"
+mkdir -p "$SITE"
 
 for lang in "${LANG_CODES[@]}"; do
     build_release "$lang"
