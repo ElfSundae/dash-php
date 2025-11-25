@@ -2,7 +2,8 @@ name: Deploy Pages
 
 on:
   workflow_run:
-    workflows: ["Publish Docsets"]
+    workflows:
+      - Publish Docsets
     types:
       - completed
   workflow_dispatch:
@@ -24,6 +25,8 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v5
@@ -31,11 +34,22 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Get latest run id
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        id: get_run
+        run: |
+          run_id=$(gh run list \
+            --workflow "Publish Docsets" \
+            --json databaseId,conclusion \
+            --jq 'map(select(.conclusion=="success")) | first.databaseId')
+          echo "run_id=$run_id" >> $GITHUB_OUTPUT
+
       - name: Download site artifact
         uses: actions/download-artifact@v6
         with:
           name: site
           path: _site
+          run-id: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || steps.get_run.outputs.run_id }}
 
       - name: Update Pages content
         run: cp -a site/. _site/
