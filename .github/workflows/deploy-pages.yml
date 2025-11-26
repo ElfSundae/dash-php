@@ -50,17 +50,14 @@ jobs:
         uses: actions/download-artifact@v5
         with:
           name: site
-          path: _site
+          path: docs
           github-token: ${{ github.token }}
           run-id: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.id || steps.get_run.outputs.run_id }}
-
-      - name: Update Pages content
-        run: cp -a site/. _site/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site/
+          path: docs/
 
       - name: Deploy to GitHub Pages
         id: deployment
