@@ -340,8 +340,8 @@ generate_docset() {
     local fonts="$BUILD/fonts"
     rm -rf "$fonts"
     cp -R "$PHPDOC/web-php/fonts" "$fonts"
-    find "$fonts" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g" {} +
-    find "$fonts/Font-Awesome" -type f -name "*.css" -exec sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g" {} +
+    find "$fonts" -type f -name "*.css" -print0 | xargs -0 sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g"
+    find "$fonts/Font-Awesome" -type f -name "*.css" -print0 | xargs -0 sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g"
 
     local format="enhancedchm"
     if [[ "$NO_USERNOTES" == true ]]; then
