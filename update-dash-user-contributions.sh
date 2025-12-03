@@ -27,11 +27,7 @@ branch="update-php-docsets"
 msg_main "Preparing the fork repository (${FORK_REPO})..."
 
 if [[ ! -d "$fork_path" ]]; then
-    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
-        git clone "https://x-access-token:${GH_TOKEN}@github.com/${FORK_REPO}.git" "$fork_path"
-    else
-        git clone "https://github.com/${FORK_REPO}.git" "$fork_path"
-    fi
+    git clone "https://${GH_TOKEN:+"x-access-token:${GH_TOKEN}@"}github.com/${FORK_REPO}.git" "$fork_path"
 else
     (
         cd "$fork_path"
