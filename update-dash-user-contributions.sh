@@ -99,10 +99,23 @@ for lang in "${LANG_CODES[@]}"; do
     msg_main "Updating ${docset_filename}..."
 
     if [[ "$DEV_MODE" == false || ! -d "$docset" ]]; then
-        "$ROOT/generate.sh" "$lang" "$@" --output "$OUTPUT" || {
+        if ! "$ROOT/generate.sh" "$lang" "$@" --output "$OUTPUT"; then
             msg_error "Failed to generate Dash docset for language: $lang"
-            continue
-        }
+
+            docset_archive_url="https://github.com/ElfSundae/dash-php/releases/download/docsets/${docset_archive}"
+            docset_archive_path="$OUTPUT/$docset_archive"
+            msg_main "Try to download existing docset: ${docset_archive_url}..."
+            if ! curl -fsL -o "$docset_archive_path" "$docset_archive_url"; then
+                msg_error "Failed to download existing docset: $docset_archive"
+                continue
+            fi
+
+            msg_main "Unarchiving ${docset_archive}..."
+            tar -xf "$docset_archive_path" -C "$OUTPUT" || {
+                msg_error "Failed to unarchive $docset_archive"
+                continue
+            }
+        fi
     fi
 
     docset_bundle_name=$(get_docset_bundle_name "$docset")
