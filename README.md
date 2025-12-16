@@ -22,6 +22,7 @@ You can install the prebuilt and automatically updated PHP docsets directly in [
 | Docset                     | Feed URL                                                                                                                | Install                          |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | PHP (English)              | <https://elfsundae.github.io/dash-php/feeds/PHP_-_English.xml><br>[![Version Badge][badge_en]][release]                 | 📚 [Add to Dash][install_en]    |
+| PHP (Deutsch)              | <https://elfsundae.github.io/dash-php/feeds/PHP_-_German.xml><br>[![Version Badge][badge_de]][release]                  | 📚 [Add to Dash][install_de]    |
 | PHP (Español)              | <https://elfsundae.github.io/dash-php/feeds/PHP_-_Spanish.xml><br>[![Version Badge][badge_es]][release]                 | 📚 [Add to Dash][install_es]    |
 | PHP (Français)             | <https://elfsundae.github.io/dash-php/feeds/PHP_-_French.xml><br>[![Version Badge][badge_fr]][release]                  | 📚 [Add to Dash][install_fr]    |
 | PHP (Italiano)             | <https://elfsundae.github.io/dash-php/feeds/PHP_-_Italian.xml><br>[![Version Badge][badge_it]][release]                 | 📚 [Add to Dash][install_it]    |
@@ -34,6 +35,7 @@ You can install the prebuilt and automatically updated PHP docsets directly in [
 
 [release]: https://github.com/ElfSundae/dash-php/releases/tag/docsets
 [badge_en]: https://elfsundae.github.io/dash-php/badges/PHP_en.svg
+[badge_de]: https://elfsundae.github.io/dash-php/badges/PHP_de.svg
 [badge_es]: https://elfsundae.github.io/dash-php/badges/PHP_es.svg
 [badge_fr]: https://elfsundae.github.io/dash-php/badges/PHP_fr.svg
 [badge_it]: https://elfsundae.github.io/dash-php/badges/PHP_it.svg
@@ -44,6 +46,7 @@ You can install the prebuilt and automatically updated PHP docsets directly in [
 [badge_uk]: https://elfsundae.github.io/dash-php/badges/PHP_uk.svg
 [badge_zh]: https://elfsundae.github.io/dash-php/badges/PHP_zh.svg
 [install_en]: https://elfsundae.github.io/dash-php/feed/?lang=en "Add PHP (English) docset feed to Dash"
+[install_de]: https://elfsundae.github.io/dash-php/feed/?lang=de "Add PHP (Deutsch) docset feed to Dash"
 [install_es]: https://elfsundae.github.io/dash-php/feed/?lang=es "Add PHP (Español) docset feed to Dash"
 [install_fr]: https://elfsundae.github.io/dash-php/feed/?lang=fr "Add PHP (Français) docset feed to Dash"
 [install_it]: https://elfsundae.github.io/dash-php/feed/?lang=it "Add PHP (Italiano) docset feed to Dash"
