@@ -28,7 +28,7 @@ jobs:
           php-version: "8.4"
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Build Release assets
         id: build
