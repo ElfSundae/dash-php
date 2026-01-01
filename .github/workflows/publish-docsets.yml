@@ -51,7 +51,7 @@ jobs:
           make_latest: true
 
       - name: Upload site artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: site
           path: _site
