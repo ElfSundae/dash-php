@@ -1,8 +1,8 @@
 diff --git a/phpdotnet/phd/Package/Generic/XHTML.php b/phpdotnet/phd/Package/Generic/XHTML.php
-index 8c419e4..a4b5b75 100644
+index e5cdaed..fa6d4f8 100644
 --- a/phpdotnet/phd/Package/Generic/XHTML.php
 +++ b/phpdotnet/phd/Package/Generic/XHTML.php
-@@ -689,7 +689,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
+@@ -769,7 +769,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
              $basename = basename($css);
              $dest = md5(substr($css, 0, -strlen($basename))) . '-' . $basename;
              if (@copy($css, $stylesDir . $dest)) {
@@ -228,7 +228,7 @@ index 86d9c44..b959d28 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index 9c26c31..1e7945a 100644
+index bac8973..714bcd9 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 @@ -17,6 +17,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
@@ -306,16 +306,12 @@ index 9c26c31..1e7945a 100644
               </head>
               <body class="docs">
          HTML;
-diff --git a/phpdotnet/phd/Package/PHP/EnhancedCHM.php b/phpdotnet/phd/Package/PHP/EnhancedCHM.php
-index 25532a1..04f5664 100644
---- a/phpdotnet/phd/Package/PHP/EnhancedCHM.php
-+++ b/phpdotnet/phd/Package/PHP/EnhancedCHM.php
-@@ -75,7 +75,7 @@ class Package_PHP_EnhancedCHM extends Package_PHP_CHM
-                 $this->outputHandler->v('Preparing usernotes.', VERBOSE_MESSAGES);
- 
-                 // Decompress the 'all' file into single files - one file per sectionid.
--                while($fpNotes && !feof($fpNotes) && false !== ($userNote = fgetcsv($fpNotes, 0, '|'))) {
-+                while($fpNotes && !feof($fpNotes) && false !== ($userNote = fgetcsv($fpNotes, 0, '|', '"', '\\'))) {
-                     // Usernote index
-                     // 0 = Note ID
-                     // 1 = Section ID
+@@ -193,7 +208,7 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
+                       aria-label="Search docs"
+                     />
+                   </div>
+-            
++
+                   <button aria-label="Close" class="search-modal__close">
+                     <!-- https://pictogrammers.com/library/mdi/icon/close/ -->
+                     <svg
