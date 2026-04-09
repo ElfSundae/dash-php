@@ -140,6 +140,16 @@ for lang in "${LANG_CODES[@]}"; do
     fi
     msg_sub "$docset_filename version: $version"
 
+    # Check existing version in fork repository; skip if same version
+    existing_json="$fork_path/docsets/$docset_name/docset.json"
+    if [[ -f "$existing_json" ]]; then
+        existing_version=$(jq -r '.version // empty' "$existing_json" 2>/dev/null || true)
+        if [[ -n "$existing_version" && "$existing_version" == "$version" ]]; then
+            msg_sub "Same version ($version) already exists in fork, skipping ${docset_filename}."
+            continue
+        fi
+    fi
+
     msg_sub "Archiving ${docset_filename}..."
     (
         cd "$OUTPUT"
