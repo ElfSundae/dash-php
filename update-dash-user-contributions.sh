@@ -125,7 +125,7 @@ for lang in "${LANG_CODES[@]}"; do
     fi
     msg_sub "$docset_filename bundle name: $docset_bundle_name"
 
-    localized_manual_title=$(xmllint --html --xpath 'string(//title[1])' \
+    localized_manual_title=$(xmllint --html --xpath 'string(//h1[@class="title"][1])' \
         "$docset/Contents/Resources/Documents/index.html" 2>/dev/null) || {
         msg_error "Failed to obtain localized manual title."
         continue
