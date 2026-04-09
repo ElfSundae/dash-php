@@ -50,7 +50,7 @@ jobs:
           wget --version
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Show help
         run: ./generate.sh -h

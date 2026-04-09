@@ -29,7 +29,7 @@ jobs:
           php-version: ${{ matrix.php }}
 
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Generate docsets
         run: |
