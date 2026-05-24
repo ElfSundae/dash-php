@@ -13,8 +13,8 @@ jobs:
           - "ubuntu-latest"
           - "macos-latest"
         php:
-          # - "8.2"
-          - "8.4"
+          # - "8.4"
+          - "8.5"
 
     steps:
       - name: Install tools

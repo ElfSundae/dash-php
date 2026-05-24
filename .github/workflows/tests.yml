@@ -25,8 +25,8 @@ jobs:
           # - "macos-latest"
           - "ubuntu-latest"
         php:
-          # - "8.2"
-          - "8.4"
+          # - "8.4"
+          - "8.5"
 
     name: PHP ${{ matrix.php }} on ${{ matrix.os }}
 
