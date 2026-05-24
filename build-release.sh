@@ -107,7 +107,7 @@ ${docset_build_date} | \`${version}\` | <${feed_url}> | \
     cp "${OUTPUT}/${feed_filename}" "$SITE/feeds/"
 
     mkdir -p "$SITE/badges"
-    badge "$docset_build_date" "$version" blue grey > "$SITE/badges/${docset_name}.svg"
+    npx -y badge "$docset_build_date" "$version" blue grey > "$SITE/badges/${docset_name}.svg"
 }
 
 require_command curl md5sum tar badge
