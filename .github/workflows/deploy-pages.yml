@@ -32,7 +32,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Get latest run id
         if: ${{ github.event_name == 'workflow_dispatch' }}
