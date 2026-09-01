@@ -337,9 +337,11 @@ generate_docset() {
     build_docbook "$lang"
 
     # Prepare styles and fonts
+    local webphpPublic="$PHPDOC/web-php/public"
+
     local fonts="$BUILD/fonts"
     rm -rf "$fonts"
-    cp -R "$PHPDOC/web-php/fonts" "$fonts"
+    cp -R "$webphpPublic/fonts" "$fonts"
     find "$fonts" -type f -name "*.css" -print0 | xargs -0 sed "${SED_INPLACE[@]}" "s|'/fonts/|'../fonts/|g"
     find "$fonts/Font-Awesome" -type f -name "*.css" -print0 | xargs -0 sed "${SED_INPLACE[@]}" "s|'\.\./font/|'../fonts/Font-Awesome/font/|g"
 
@@ -351,14 +353,14 @@ generate_docset() {
     render_docbook "$format" --lang "$lang" \
         --css "$fonts/Fira/fira.css" \
         --css "$fonts/Font-Awesome/css/fontello.css" \
-        --css "$PHPDOC/web-php/styles/theme-base.css" \
-        --css "$PHPDOC/web-php/styles/theme-medium.css" \
+        --css "$webphpPublic/styles/theme-base.css" \
+        --css "$webphpPublic/styles/theme-medium.css" \
         --css "$ROOT/assets/style.css"
 
     local root="$BUILD/php-$format"
     mv "$fonts" "$root/res/"
-    cp "$PHPDOC/web-php"/favicon* "$root/res/"
-    cp "$PHPDOC/web-php/images/bg-texture-00.svg" "$root/res/images/"
+    cp "$webphpPublic"/favicon* "$root/res/"
+    cp "$webphpPublic/images/bg-texture-00.svg" "$root/res/images/"
 
     create_dash_docset "$root/res" "$lang" "$BUILD/index.sqlite"
 }
