@@ -389,8 +389,8 @@ generate_mirror() {
     (
         cd "$public"
         # Some files are pre-generated on master.php.net for various reasons
-        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do run curl -fSs "https://www.php.net/include/$i" -o $i; done;)
-        (cd backend && for i in ip-to-country.db ip-to-country.idx; do run curl -fSs "https://www.php.net/backend/$i" -o $i; done;)
+        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do run curl -fSs "https://www.php.net/include/$i" -o $i || true; done;)
+        (cd backend && for i in ip-to-country.db ip-to-country.idx; do run curl -fSs "https://www.php.net/backend/$i" -o $i || true; done;)
     ) || {
         msg_error "Failed to download php.net pre-generated files."
         exit 4
