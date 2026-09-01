@@ -1,8 +1,8 @@
 diff --git a/phpdotnet/phd/Package/Generic/XHTML.php b/phpdotnet/phd/Package/Generic/XHTML.php
-index e5cdaed..fa6d4f8 100644
+index 6719d01..0a832db 100644
 --- a/phpdotnet/phd/Package/Generic/XHTML.php
 +++ b/phpdotnet/phd/Package/Generic/XHTML.php
-@@ -769,7 +769,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
+@@ -775,7 +775,14 @@ abstract class Package_Generic_XHTML extends Format_Abstract_XHTML {
              $basename = basename($css);
              $dest = md5(substr($css, 0, -strlen($basename))) . '-' . $basename;
              if (@copy($css, $stylesDir . $dest)) {
@@ -228,7 +228,7 @@ index 86d9c44..b959d28 100644
              "preferred_font" => "simsun,10,0"
          )
 diff --git a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
-index bac8973..714bcd9 100644
+index bac8973..1e89d67 100644
 --- a/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 +++ b/phpdotnet/phd/Package/PHP/ChunkedXHTML.php
 @@ -17,6 +17,17 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
@@ -306,12 +306,3 @@ index bac8973..714bcd9 100644
               </head>
               <body class="docs">
          HTML;
-@@ -193,7 +208,7 @@ class Package_PHP_ChunkedXHTML extends Package_PHP_Web {
-                       aria-label="Search docs"
-                     />
-                   </div>
--            
-+
-                   <button aria-label="Close" class="search-modal__close">
-                     <!-- https://pictogrammers.com/library/mdi/icon/close/ -->
-                     <svg
