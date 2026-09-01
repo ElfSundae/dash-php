@@ -128,7 +128,7 @@ Exclude user-contributed notes:
 - `git`
 - `sqlite3`
 - `xmllint`
-- `rsync`, `wget` — required only for generating a php.net mirror
+- `rsync`, `curl` — required only for generating a php.net mirror
 
 ## License
 

@@ -47,7 +47,7 @@ jobs:
           php -v
           sqlite3 -version
           xmllint --version
-          wget --version
+          curl --version
 
       - name: Checkout repository
         uses: actions/checkout@v7

@@ -375,9 +375,10 @@ generate_docsets() {
 
 # Generate a php.net mirror in the output directory
 generate_mirror() {
-    require_command rsync wget
+    require_command rsync curl
 
     local root="$BUILD/php.net"
+    local public="$root/public"
 
     msg_main "Generating php.net mirror..."
 
@@ -386,10 +387,10 @@ generate_mirror() {
     msg_sub "Downloading php.net pre-generated files..."
     # See https://wiki.php.net/web/mirror
     (
-        cd "$root"
+        cd "$public"
         # Some files are pre-generated on master.php.net for various reasons
-        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do run wget "https://www.php.net/include/$i" -O $i; done;)
-        (cd backend && for i in ip-to-country.db ip-to-country.idx; do run wget "https://www.php.net/backend/$i" -O $i; done;)
+        (cd include && for i in countries.inc last_updated.inc mirrors.inc pregen-confs.inc pregen-events.inc pregen-news.inc; do run curl -fSs "https://www.php.net/include/$i" -o $i; done;)
+        (cd backend && for i in ip-to-country.db ip-to-country.idx; do run curl -fSs "https://www.php.net/backend/$i" -o $i; done;)
     ) || {
         msg_error "Failed to download php.net pre-generated files."
         exit 4
@@ -400,8 +401,8 @@ generate_mirror() {
         msg_sub "Building PHP documentation for language: $lang ($(get_lang_local_name "$lang"))..."
         build_docbook "$lang"
         render_docbook php
-        rm -rf "$root/manual/$lang"
-        mv "$BUILD/php-web" "$root/manual/$lang"
+        rm -rf "$public/manual/$lang"
+        mv "$BUILD/php-web" "$public/manual/$lang"
     done
 
     mkdir -p "$OUTPUT"
@@ -409,7 +410,7 @@ generate_mirror() {
     rsync -aq --delete "$root/" "$output_mirror/"
 
     msg_done "Generated php.net mirror at $output_mirror, you may run the web server via:
-(cd \"$output_mirror\" && php -S localhost:8080 .router.php)"
+(cd \"$output_mirror/public\" && php -S localhost:8080 .router.php)"
 }
 
 main() {
