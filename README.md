@@ -118,7 +118,7 @@ Exclude user-contributed notes:
   ```
   You can run a local server:
   ```bash
-  (cd output/php.net && php -S localhost:8080 .router.php)
+  (cd output/php.net/public && php -S localhost:8080 .router.php)
   ```
 
 ## Requirements
