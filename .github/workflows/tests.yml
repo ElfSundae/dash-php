@@ -84,17 +84,17 @@ jobs:
         run: |
           rm -rf output
           ./generate.sh --mirror
-          test -d output/php.net
-          test -d output/php.net/manual/en
+          test -d output/php.net/public
+          test -d output/php.net/public/manual/en
 
       - name: Test --mirror option with multiple languages
         if: env.RUN_FULL_TESTS == 'true'
         run: |
           rm -rf output
           ./generate.sh --mirror en zh
-          test -d output/php.net
-          test -d output/php.net/manual/en
-          test -d output/php.net/manual/zh
+          test -d output/php.net/public
+          test -d output/php.net/public/manual/en
+          test -d output/php.net/public/manual/zh
 
       - name: Test --no-usernotes option
         if: env.RUN_FULL_TESTS == 'true'
@@ -126,9 +126,9 @@ jobs:
 
           rm -rf ~/custom/output
           ./generate.sh --output ~/custom/output en zh --mirror
-          test -d ~/custom/output/php.net
-          test -d ~/custom/output/php.net/manual/en
-          test -d ~/custom/output/php.net/manual/zh
+          test -d ~/custom/output/php.net/public
+          test -d ~/custom/output/php.net/public/manual/en
+          test -d ~/custom/output/php.net/public/manual/zh
           rm -rf ~/custom/output
 
       - name: Test all languages
