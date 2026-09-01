@@ -410,7 +410,7 @@ generate_mirror() {
     rsync -aq --delete "$root/" "$output_mirror/"
 
     msg_done "Generated php.net mirror at $output_mirror, you may run the web server via:
-(cd \"$output_mirror/public\" && php -S localhost:8080 .router.php)"
+    (cd \"$output_mirror/public\" && php -S localhost:8080 .router.php)"
 }
 
 main() {
