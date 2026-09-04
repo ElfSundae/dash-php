@@ -237,7 +237,11 @@ EOF
 .mode insert searchIndex
 .headers off
 SELECT
-  CASE WHEN sdesc <> '' THEN sdesc ELSE ldesc END AS name,
+  replace(
+    CASE WHEN sdesc <> '' THEN sdesc ELSE ldesc END,
+    char(10),
+    ''
+  ) AS name,
   '$type' AS type,
   filename || '.html' AS path
 FROM ids
